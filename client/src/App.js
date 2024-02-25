@@ -1,7 +1,19 @@
 // Import necessary modules from React, React Router DOM, Material UI, and the StockDetails component.
 import { Routes, Route, Link, useNavigate } from "react-router-dom";
-import { AppBar, Toolbar, Typography, Button, Container, Table, TableBody, TableCell, TableContainer, TableRow, Paper } from "@mui/material";
-import StockDetails from "./components/StockDetails"; 
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  Container,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableRow,
+  Paper,
+} from "@mui/material";
+import StockDetails from "./components/StockDetails";
 
 // CSV string containing stock information.
 const csvData = `
@@ -38,7 +50,7 @@ Z,Zillow Group Inc - Class C,NASDAQ,Stock,2015-08-03,null,Active
 const parseCSV = (data) => {
   const lines = data.trim().split("\n");
   const headers = lines[0].split(",");
-  return lines.slice(1).map(line => {
+  return lines.slice(1).map((line) => {
     const values = line.split(",");
     return headers.reduce((object, header, index) => {
       object[header] = values[index];
@@ -81,9 +93,18 @@ const App = () => {
     <>
       <AppBar position="static" style={{ backgroundColor: "#1976d2" }}>
         <Toolbar style={{ justifyContent: "space-between" }}>
-          <Typography variant="h4" style={{ color: "white" }}>WealthWise</Typography>
+          <Typography variant="h4" style={{ color: "white" }}>
+            WealthWise
+          </Typography>
           <div>
-            <Button color="inherit" component={Link} to="/" style={{ color: "white" }}>Portfolio</Button>
+            <Button
+              color="inherit"
+              component={Link}
+              to="/"
+              style={{ color: "white" }}
+            >
+              Portfolio
+            </Button>
           </div>
         </Toolbar>
       </AppBar>
