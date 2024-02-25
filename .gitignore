@@ -1,0 +1,8 @@
+node_modules/
+__pycache__/
+.env
+package-lock.json # Optional: Some prefer to keep it to ensure consistent dependencies
+node_modules/
+__pycache__/
+.env
+package-lock.json # Optional: Some prefer to keep it to ensure consistent dependencies
