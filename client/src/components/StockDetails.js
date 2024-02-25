@@ -1,6 +1,7 @@
+// Import necessary hooks and components from React, React Router, Axios for HTTP requests, and Recharts for charting
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
-import axios from "axios";
+import { useParams } from "react-router-dom"; // To access the URL parameters
+import axios from "axios"; // For making HTTP requests
 import {
   LineChart,
   Line,
@@ -9,22 +10,26 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  ResponsiveContainer,
+  ResponsiveContainer, // Components from Recharts for rendering line charts
 } from "recharts";
 
+// Define the StockDetails component
 const StockDetails = () => {
-  const [originalData, setOriginalData] = useState([]);
-  const [details, setDetails] = useState([]); 
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [latestQuote, setLatestQuote] = useState(null);
-  const { symbol } = useParams(); 
+  // State hooks for managing component state
+  const [originalData, setOriginalData] = useState([]); // Stores the original fetched data for the stock
+  const [details, setDetails] = useState([]); // Processed data to be displayed in the chart
+  const [startDate, setStartDate] = useState(""); // User-selected start date for filtering the chart data
+  const [endDate, setEndDate] = useState(""); // User-selected end date for filtering the chart data
+  const [latestQuote, setLatestQuote] = useState(null); // Stores the latest quote data for the stock
+  const { symbol } = useParams(); // Extracts the stock symbol from the URL parameters
 
+  // Effect hook to fetch stock details data from the server
   useEffect(() => {
     const fetchDetails = async () => {
       try {
-        const response = await axios.get(`/api/stock/${symbol}`);
-        const weeklyTimeSeries = response.data["Weekly Time Series"];
+        const response = await axios.get(`/api/stock/${symbol}`); // Fetch stock data
+        const weeklyTimeSeries = response.data["Weekly Time Series"]; // Extract the relevant data
+        // Transform the data into a format suitable for the chart
         const chartData = Object.entries(weeklyTimeSeries).map(
           ([date, data]) => ({
             date,
@@ -35,54 +40,59 @@ const StockDetails = () => {
             volume: parseFloat(data["5. volume"]),
           })
         );
-        setOriginalData(chartData); 
-        setDetails(chartData); 
+        setOriginalData(chartData); // Update the state with the fetched data
+        setDetails(chartData); // Initially, display all fetched data in the chart
       } catch (error) {
-        console.error("Error fetching details:", error);
+        console.error("Error fetching details:", error); // Log any errors
       }
     };
 
-    fetchDetails();
-  }, [symbol]);
+    fetchDetails(); // Invoke the fetch operation
+  }, [symbol]); // Re-run the effect if the symbol changes
 
+  // Effect hook to fetch the latest quote for the stock
   useEffect(() => {
     const fetchLatestQuote = async () => {
       try {
-        const response = await axios.get(`/api/quote/${symbol}`);
-        setLatestQuote(response.data["Global Quote"]);
+        const response = await axios.get(`/api/quote/${symbol}`); // Fetch the latest quote data
+        setLatestQuote(response.data["Global Quote"]); // Update the state with the fetched data
       } catch (error) {
-        console.error("Error fetching latest quote:", error);
+        console.error("Error fetching latest quote:", error); // Log any errors
       }
     };
 
-    fetchLatestQuote();
-  }, [symbol]);
+    fetchLatestQuote(); // Invoke the fetch operation
+  }, [symbol]); // Re-run the effect if the symbol changes
 
+  // Handler for start date change
   const handleStartDateChange = (e) => {
     const newStartDate = e.target.value;
     setStartDate(newStartDate);
-
+    // If the new start date is after the current end date, reset the end date
     if (newStartDate && newStartDate > endDate) {
-      setEndDate(""); // Reset the end date if it's before the new start date
+      setEndDate("");
     }
   };
 
+  // Handler for end date change
   const handleEndDateChange = (e) => {
     const newEndDate = e.target.value;
     setEndDate(newEndDate);
   };
 
+  // Function to update the chart based on selected date range
   const updateChart = () => {
     const filteredData = originalData.filter((data) => {
       const dataDate = new Date(data.date);
-      const start = startDate ? new Date(startDate) : new Date("1970-01-01"); 
-      const end = endDate ? new Date(endDate) : new Date(); 
-      return dataDate >= start && dataDate <= end;
+      const start = startDate ? new Date(startDate) : new Date("1970-01-01");
+      const end = endDate ? new Date(endDate) : new Date();
+      return dataDate >= start && dataDate <= end; // Only include data within the selected range
     });
 
-    setDetails(filteredData);
+    setDetails(filteredData); // Update the chart data
   };
 
+  // Render the component
   return (
     <div>
       <h2>Stock Details for {symbol}</h2>
@@ -111,7 +121,7 @@ const StockDetails = () => {
                 type="date"
                 value={endDate}
                 onChange={handleEndDateChange}
-                min={startDate} 
+                min={startDate}
               />
             </label>
             <button onClick={updateChart} style={{ height: "fit-content" }}>
@@ -213,4 +223,4 @@ const StockDetails = () => {
   );
 };
 
-export default StockDetails;
+export default StockDetails; // Export the component for use in other parts of the app
