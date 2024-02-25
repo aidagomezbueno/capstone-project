@@ -8,32 +8,32 @@ CORS(app, resources={r"*": {"origins": "http://localhost:3000"}})
 ALPHA_VANTAGE_API_KEY = 'E8LCWIHQ1EEYAU63'
 STOCK_DATA_URL = 'https://www.alphavantage.co/query'
 
-@app.route('/api/all-stocks')
-def get_all_stocks():
-    url = f"{STOCK_DATA_URL}?function=LISTING_STATUS&apikey={ALPHA_VANTAGE_API_KEY}"
-    try:
-        def generate():
-            with requests.get(url, stream=True) as r:
-                r.raise_for_status()  
-                lines = r.iter_lines()
-                for _ in range(1000):
-                    try:
-                        yield next(lines) + b'\n'
-                    except StopIteration:
-                        break
-        return Response(generate(), content_type='text/csv')
-    except requests.exceptions.HTTPError as errh:
-        print("Http Error:", errh)
-        return jsonify(error=str(errh)), errh.response.status_code
-    except requests.exceptions.ConnectionError as errc:
-        print("Error Connecting:", errc)
-        return jsonify(error=str(errc)), 503
-    except requests.exceptions.Timeout as errt:
-        print("Timeout Error:", errt)
-        return jsonify(error=str(errt)), 504
-    except requests.exceptions.RequestException as err:
-        print("Oops: Something Else", err)
-        return jsonify(error=str(err)), 500
+# @app.route('/api/all-stocks')
+# def get_all_stocks():
+#     url = f"{STOCK_DATA_URL}?function=LISTING_STATUS&apikey={ALPHA_VANTAGE_API_KEY}"
+#     try:
+#         def generate():
+#             with requests.get(url, stream=True) as r:
+#                 r.raise_for_status()  
+#                 lines = r.iter_lines()
+#                 for _ in range(10000000000):
+#                     try:
+#                         yield next(lines) + b'\n'
+#                     except StopIteration:
+#                         break
+#         return Response(generate(), content_type='text/csv')
+#     except requests.exceptions.HTTPError as errh:
+#         print("Http Error:", errh)
+#         return jsonify(error=str(errh)), errh.response.status_code
+#     except requests.exceptions.ConnectionError as errc:
+#         print("Error Connecting:", errc)
+#         return jsonify(error=str(errc)), 503
+#     except requests.exceptions.Timeout as errt:
+#         print("Timeout Error:", errt)
+#         return jsonify(error=str(errt)), 504
+#     except requests.exceptions.RequestException as err:
+#         print("Oops: Something Else", err)
+#         return jsonify(error=str(err)), 500
 
 # @app.route('/api/all-stocks')
 # def get_all_stocks():
