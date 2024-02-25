@@ -4,25 +4,14 @@ import {
   TableBody,
   TableCell,
   TableContainer,
-  TableHead,
   TableRow,
   Paper,
   Button,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 
 const StockList = ({ stocks, onAddToPortfolio, isPortfolioView }) => {
   const navigate = useNavigate();
-
-  const handleSeeDetails = async (symbol) => {
-    try {
-      const response = await axios.get(`/api/stock/${symbol}`);
-      console.log(response.data);
-    } catch (error) {
-      console.error("Error fetching stock details:", error);
-    }
-  };
 
   return (
     <TableContainer component={Paper}>

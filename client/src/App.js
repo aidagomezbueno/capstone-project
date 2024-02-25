@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react"; // React core features
 import axios from "axios"; // For making HTTP requests
-import { Routes, Route, Link, useParams } from "react-router-dom"; // React Router components for routing
+import { Routes, Route, Link } from "react-router-dom"; // React Router components for routing
 import { AppBar, Toolbar, Typography, Button, Container } from "@mui/material"; // Material-UI components for UI elements
 import StockList from "./components/StockList"; // Custom component for displaying a list of stocks
 import StockDetails from "./components/StockDetails"; // Custom component for displaying stock details
-import parseCSV from "./utils/parseCSV"; // Utility function for parsing CSV data
 
 const App = () => {
 
@@ -37,11 +36,15 @@ const App = () => {
     }
   };
 
-  // Component for rendering stock details, utilizing useParams to access the symbol from the URL
-  // const StockPage = () => {
-  //   let { symbol } = useParams(); // Extracts the symbol parameter from the URL
-  //   return <StockDetails symbol={symbol} />; // Renders the StockDetails component with the symbol
-  // };
+  const parseCSV = (data) => {
+    return data.split('\n')
+      .slice(1)
+      .map(line => {
+        const [symbol, name] = line.split(',');
+        return { symbol, name };
+      })
+      .filter(stock => stock.symbol && stock.name);
+  };
 
   // Computes the list of stock objects in the portfolio by mapping over portfolioSymbols and finding each in allStocks
   const portfolioStocks = portfolioSymbols
