@@ -1,3 +1,4 @@
+// frontend - App.js
 import React, { useState, useEffect } from "react"; // React core features
 import axios from "axios"; // For making HTTP requests
 import { Routes, Route, Link } from "react-router-dom"; // React Router components for routing
@@ -6,17 +7,18 @@ import StockList from "./components/StockList"; // Custom component for displayi
 import StockDetails from "./components/StockDetails"; // Custom component for displaying stock details
 
 const App = () => {
-
   const [allStocks, setAllStocks] = useState([]); // Stores the list of all stock data
   const [portfolioSymbols, setPortfolioSymbols] = useState([]); // Stores the symbols of stocks added to the portfolio
 
   useEffect(() => {
     const fetchStocks = async () => {
       try {
-        const response = await axios.get("/api/all-stocks");
+        const response = await axios.get(
+          "https://aida-mcsbt-integration.lm.r.appspot.com/api/all-stocks"
+        );
         const parsedData = parseCSV(response.data);
-        setAllStocks(parsedData.slice(0, 1000)); 
-        // setAllStocks(parsedData);
+        // setAllStocks(parsedData.slice(0, 1000));
+        setAllStocks(parsedData);
       } catch (error) {
         console.error("Error fetching stocks:", error);
       }
@@ -37,13 +39,14 @@ const App = () => {
   };
 
   const parseCSV = (data) => {
-    return data.split('\n')
+    return data
+      .split("\n")
       .slice(1)
-      .map(line => {
-        const [symbol, name] = line.split(',');
+      .map((line) => {
+        const [symbol, name] = line.split(",");
         return { symbol, name };
       })
-      .filter(stock => stock.symbol && stock.name);
+      .filter((stock) => stock.symbol && stock.name);
   };
 
   // Computes the list of stock objects in the portfolio by mapping over portfolioSymbols and finding each in allStocks
@@ -87,7 +90,7 @@ const App = () => {
               <StockList
                 stocks={allStocks}
                 onAddToPortfolio={handleAddToPortfolio}
-                isPortfolioView = {false}
+                isPortfolioView={false}
               />
             }
           />
@@ -97,7 +100,7 @@ const App = () => {
               <StockList
                 stocks={portfolioStocks}
                 onAddToPortfolio={handleAddToPortfolio}
-                isPortfolioView = {true}
+                isPortfolioView={true}
               />
             }
           />
@@ -108,4 +111,4 @@ const App = () => {
   );
 };
 
-export default App; 
+export default App;

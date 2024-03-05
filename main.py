@@ -1,9 +1,11 @@
+#backend - app.py
+
 from flask import Flask, jsonify, Response
 from flask_cors import CORS
 import requests
 
 app = Flask(__name__)
-CORS(app, resources={r"*": {"origins": "http://localhost:3000"}})
+CORS(app, resources={r"*": {"origins": "http://aida_gomezbueno.storage.googleapis.com"}})
 
 ALPHA_VANTAGE_API_KEY = 'E8LCWIHQ1EEYAU63'
 STOCK_DATA_URL = 'https://www.alphavantage.co/query'
@@ -81,6 +83,3 @@ def get_latest_quote(symbol):
     except requests.exceptions.RequestException as err:
         print ("Oops: Something Else",err)
         return jsonify(error=str(err)), 500
-
-if __name__ == '__main__':
-    app.run(debug=True)

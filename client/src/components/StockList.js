@@ -1,3 +1,4 @@
+// frontend - StockList.js
 import React from "react";
 import {
   Table,
@@ -6,7 +7,7 @@ import {
   TableContainer,
   TableRow,
   Paper,
-  Button,
+  Button
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 

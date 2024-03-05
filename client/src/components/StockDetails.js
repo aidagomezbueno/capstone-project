@@ -1,3 +1,4 @@
+// frontend - StockDetails.js
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
@@ -14,16 +15,18 @@ import {
 
 const StockDetails = () => {
   const [originalData, setOriginalData] = useState([]);
-  const [details, setDetails] = useState([]); 
+  const [details, setDetails] = useState([]);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [latestQuote, setLatestQuote] = useState(null);
-  const { symbol } = useParams(); 
+  const { symbol } = useParams();
 
   useEffect(() => {
     const fetchDetails = async () => {
       try {
-        const response = await axios.get(`/api/stock/${symbol}`);
+        const response = await axios.get(
+          `https://aida-mcsbt-integration.lm.r.appspot.com/api/stock/${symbol}`
+        );
         const weeklyTimeSeries = response.data["Weekly Time Series"];
         const chartData = Object.entries(weeklyTimeSeries).map(
           ([date, data]) => ({
@@ -35,8 +38,8 @@ const StockDetails = () => {
             volume: parseFloat(data["5. volume"]),
           })
         );
-        setOriginalData(chartData); 
-        setDetails(chartData); 
+        setOriginalData(chartData);
+        setDetails(chartData);
       } catch (error) {
         console.error("Error fetching details:", error);
       }
@@ -48,7 +51,9 @@ const StockDetails = () => {
   useEffect(() => {
     const fetchLatestQuote = async () => {
       try {
-        const response = await axios.get(`/api/quote/${symbol}`);
+        const response = await axios.get(
+          `https://aida-mcsbt-integration.lm.r.appspot.com/api/quote/${symbol}`
+        );
         setLatestQuote(response.data["Global Quote"]);
       } catch (error) {
         console.error("Error fetching latest quote:", error);
@@ -75,8 +80,8 @@ const StockDetails = () => {
   const updateChart = () => {
     const filteredData = originalData.filter((data) => {
       const dataDate = new Date(data.date);
-      const start = startDate ? new Date(startDate) : new Date("1970-01-01"); 
-      const end = endDate ? new Date(endDate) : new Date(); 
+      const start = startDate ? new Date(startDate) : new Date("1970-01-01");
+      const end = endDate ? new Date(endDate) : new Date();
       return dataDate >= start && dataDate <= end;
     });
 
@@ -111,7 +116,7 @@ const StockDetails = () => {
                 type="date"
                 value={endDate}
                 onChange={handleEndDateChange}
-                min={startDate} 
+                min={startDate}
               />
             </label>
             <button onClick={updateChart} style={{ height: "fit-content" }}>
