@@ -13,8 +13,6 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-
-
 const StockDetails = () => {
   const [originalData, setOriginalData] = useState([]);
   const [details, setDetails] = useState([]);

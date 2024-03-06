@@ -1,5 +1,4 @@
-// frontend - StockList.js
-import React, { useState } from "react"; // Make sure to import useState
+import React, { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -8,29 +7,34 @@ import {
   TableRow,
   Paper,
   Button,
-  TextField, // Import TextField for the input field
+  TextField,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
 const StockList = ({ stocks, onAddToPortfolio, isPortfolioView }) => {
   const navigate = useNavigate();
-
-  // This state will hold the investment amounts for each stock
   const [investments, setInvestments] = useState({});
 
-  // Handler for when the investment input changes
+  // Calculate total value for the portfolio view
+  const totalValue = stocks.reduce((total, stock) => {
+    const amount = Number(stock.amount) || 0;
+    const lastPrice = Number(stock.lastPrice) || 0;
+    return total + amount * lastPrice;
+  }, 0);
+
   const handleInvestmentChange = (symbol, event) => {
     const value = event.target.value;
     setInvestments({ ...investments, [symbol]: value });
   };
 
-  // Handler for when the "Add to Portfolio" button is clicked
   const handleAddToPortfolioClick = (symbol) => {
     const investmentAmount = Number(investments[symbol]);
     if (investmentAmount > 0) {
       onAddToPortfolio(symbol, investmentAmount);
-      // Reset the investment input for the symbol
-      setInvestments((prev) => ({ ...prev, [symbol]: "" }));
+      setInvestments((prevInvestments) => ({
+        ...prevInvestments,
+        [symbol]: "",
+      }));
     } else {
       alert("Please enter a valid investment amount.");
     }
@@ -47,28 +51,26 @@ const StockList = ({ stocks, onAddToPortfolio, isPortfolioView }) => {
               <TableCell align="right">
                 {isPortfolioView ? (
                   <>
-                    <span>{stock.amount.toFixed(0)} stocks</span>{" "}
-                    {/* Make sure amount is displayed as a fixed decimal */}
-                    <Button
-                      onClick={() => navigate(`/stock/${stock.symbol}`)}
-                      style={{ marginLeft: "10px" }}
-                    >
+                    <Button onClick={() => navigate(`/stock/${stock.symbol}`)}>
                       See Details
                     </Button>
+                    <span>{stock.amount.toFixed(0)} stock(s)</span>
+                    <span style={{ marginLeft: "10px" }}>
+                      ${stock.lastPrice.toFixed(2)}
+                    </span>
                   </>
                 ) : (
                   <>
                     <TextField
                       size="small"
+                      label="Input number of stocks you want to buy"
                       type="number"
-                      inputProps={{ step: "0.01" }} // Allows for decimal values
+                      inputProps={{ step: "1" }}
                       value={investments[stock.symbol] || ""}
                       onChange={(event) =>
                         handleInvestmentChange(stock.symbol, event)
                       }
-                      variant="outlined"
-                      placeholder="Amount"
-                      style={{ marginLeft: "10px" }}
+                      variant="standard"
                     />
                     <Button
                       onClick={() => handleAddToPortfolioClick(stock.symbol)}
@@ -80,6 +82,16 @@ const StockList = ({ stocks, onAddToPortfolio, isPortfolioView }) => {
               </TableCell>
             </TableRow>
           ))}
+          {isPortfolioView && (
+            <TableRow>
+              <TableCell colSpan={2} align="left">
+                <b>Total Value:</b>
+              </TableCell>
+              <TableCell align="right">
+                <b>${totalValue.toFixed(2)}</b>
+              </TableCell>
+            </TableRow>
+          )}
         </TableBody>
       </Table>
     </TableContainer>
