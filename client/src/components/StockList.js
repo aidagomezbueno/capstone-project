@@ -26,12 +26,11 @@ const StockList = ({ stocks, onAddToPortfolio, isPortfolioView }) => {
 
   // Handler for when the "Add to Portfolio" button is clicked
   const handleAddToPortfolioClick = (symbol) => {
-    // Convert input to a number and call the passed in onAddToPortfolio function
     const investmentAmount = Number(investments[symbol]);
     if (investmentAmount > 0) {
       onAddToPortfolio(symbol, investmentAmount);
-      // Clear the input for that symbol
-      setInvestments({ ...investments, [symbol]: "" });
+      // Reset the investment input for the symbol
+      setInvestments((prev) => ({ ...prev, [symbol]: "" }));
     } else {
       alert("Please enter a valid investment amount.");
     }

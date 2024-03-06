@@ -31,20 +31,20 @@ const App = () => {
     console.log("Current portfolioSymbols:", portfolioSymbols);
   }, [portfolioSymbols]); // Runs only when portfolioSymbols changes
 
-  // Make sure this function looks like this
-  const handleAddToPortfolio = (symbol, amount) => {
-    const symbolExists = portfolioSymbols.find((s) => s.symbol === symbol);
-    if (!symbolExists) {
-      // If it doesn't exist, add it along with the amount
-      setPortfolioSymbols([...portfolioSymbols, { symbol, amount }]);
-    } else {
-      // If it does exist, update the amount
-      setPortfolioSymbols(
-        portfolioSymbols.map((item) =>
-          item.symbol === symbol ? { ...item, amount } : item
-        )
-      );
-    }
+  const handleAddToPortfolio = (symbol, newAmount) => {
+    setPortfolioSymbols((currentSymbols) => {
+      const existingSymbol = currentSymbols.find((s) => s.symbol === symbol);
+
+      if (existingSymbol) {
+        // Symbol exists, so we add the new amount to the existing amount
+        return currentSymbols.map((s) =>
+          s.symbol === symbol ? { ...s, amount: s.amount + newAmount } : s
+        );
+      } else {
+        // Symbol doesn't exist, so we add it as a new entry
+        return [...currentSymbols, { symbol, amount: newAmount }];
+      }
+    });
   };
 
   const parseCSV = (data) => {
