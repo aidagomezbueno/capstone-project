@@ -44,12 +44,15 @@ const StockList = ({ stocks, onAddToPortfolio, isPortfolioView }) => {
             <TableRow key={stock.symbol}>
               <TableCell>{stock.symbol}</TableCell>
               <TableCell>{stock.name}</TableCell>
-              <TableCell>
+              <TableCell align="right">
                 {isPortfolioView ? (
                   <>
-                    <span>${stock.amount.toFixed(2)} invested</span>{" "}
+                    <span>{stock.amount.toFixed(0)} stocks</span>{" "}
                     {/* Make sure amount is displayed as a fixed decimal */}
-                    <Button onClick={() => navigate(`/stock/${stock.symbol}`)}>
+                    <Button
+                      onClick={() => navigate(`/stock/${stock.symbol}`)}
+                      style={{ marginLeft: "10px" }}
+                    >
                       See Details
                     </Button>
                   </>
@@ -65,6 +68,7 @@ const StockList = ({ stocks, onAddToPortfolio, isPortfolioView }) => {
                       }
                       variant="outlined"
                       placeholder="Amount"
+                      style={{ marginLeft: "10px" }}
                     />
                     <Button
                       onClick={() => handleAddToPortfolioClick(stock.symbol)}
