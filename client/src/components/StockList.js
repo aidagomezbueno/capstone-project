@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Table,
   TableBody,
@@ -11,26 +11,30 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
+// Displays a list of stocks, allowing users to view stock details or add them to their portfolio
 const StockList = ({ stocks, onAddToPortfolio, isPortfolioView }) => {
   const navigate = useNavigate();
-  const [investments, setInvestments] = useState({});
+  const [investments, setInvestments] = useState({}); // Tracks user inputs for investment amounts
 
-  // Calculate total value for the portfolio view
+  // Calculates the total value of all stocks in the portfolio
   const totalValue = stocks.reduce((total, stock) => {
     const amount = Number(stock.amount) || 0;
     const lastPrice = Number(stock.lastPrice) || 0;
     return total + amount * lastPrice;
   }, 0);
 
+  // Updates the investment amount for a specific stock
   const handleInvestmentChange = (symbol, event) => {
     const value = event.target.value;
     setInvestments({ ...investments, [symbol]: value });
   };
 
+  // Handles the addition of a stock to the portfolio
   const handleAddToPortfolioClick = (symbol) => {
     const investmentAmount = Number(investments[symbol]);
     if (investmentAmount > 0) {
       onAddToPortfolio(symbol, investmentAmount);
+      // Clears the input field after adding to portfolio
       setInvestments((prevInvestments) => ({
         ...prevInvestments,
         [symbol]: "",
@@ -50,6 +54,7 @@ const StockList = ({ stocks, onAddToPortfolio, isPortfolioView }) => {
               <TableCell>{stock.name}</TableCell>
               <TableCell align="right">
                 {isPortfolioView ? (
+                  // Displays stock details and current holdings for portfolio view
                   <>
                     <Button onClick={() => navigate(`/stock/${stock.symbol}`)}>
                       See Details
@@ -60,6 +65,7 @@ const StockList = ({ stocks, onAddToPortfolio, isPortfolioView }) => {
                     </span>
                   </>
                 ) : (
+                  // Provides input field and button to add stocks to portfolio for non-portfolio view
                   <>
                     <TextField
                       size="small"
@@ -83,6 +89,7 @@ const StockList = ({ stocks, onAddToPortfolio, isPortfolioView }) => {
             </TableRow>
           ))}
           {isPortfolioView && (
+            // Displays total portfolio value for portfolio view
             <TableRow>
               <TableCell colSpan={2} align="left">
                 <b>Total Value:</b>

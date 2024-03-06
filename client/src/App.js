@@ -1,4 +1,3 @@
-// frontend - App.js
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Routes, Route, Link } from "react-router-dom";
@@ -6,10 +5,12 @@ import { AppBar, Toolbar, Typography, Button, Container } from "@mui/material";
 import StockList from "./components/StockList";
 import StockDetails from "./components/StockDetails";
 
+// Main application component managing routes, stocks data, and portfolio functionality
 const App = () => {
-  const [allStocks, setAllStocks] = useState([]);
-  const [portfolioSymbols, setPortfolioSymbols] = useState([]);
+  const [allStocks, setAllStocks] = useState([]); // Holds all stock data
+  const [portfolioSymbols, setPortfolioSymbols] = useState([]); // Tracks user's portfolio stocks
 
+  // Fetches all stocks data on component mount
   useEffect(() => {
     const fetchStocks = async () => {
       try {
@@ -26,10 +27,12 @@ const App = () => {
     fetchStocks();
   }, []);
 
+  // Logs current portfolio state on change
   useEffect(() => {
     console.log("Current portfolioSymbols:", portfolioSymbols);
   }, [portfolioSymbols]);
 
+  // Handles adding or updating stocks in the portfolio
   const handleAddToPortfolio = async (symbol, newAmount) => {
     try {
       const response = await axios.get(
@@ -44,12 +47,14 @@ const App = () => {
             (s) => s.symbol === symbol
           );
           if (existingSymbol) {
+            // Update amount if symbol already exists
             return currentSymbols.map((s) =>
               s.symbol === symbol
                 ? { ...s, amount: s.amount + newAmount, lastPrice }
                 : s
             );
           } else {
+            // Add new symbol to portfolio
             return [
               ...currentSymbols,
               { symbol, amount: newAmount, lastPrice },
@@ -64,6 +69,7 @@ const App = () => {
     }
   };
 
+  // Parses CSV data into JSON
   const parseCSV = (data) => {
     return data
       .split("\n")
@@ -75,6 +81,7 @@ const App = () => {
       .filter((stock) => stock.symbol && stock.name);
   };
 
+  // Maps portfolio symbols to their corresponding stock details
   const portfolioStocks = portfolioSymbols.map((portfolioItem) => {
     const stock = allStocks.find((s) => s.symbol === portfolioItem.symbol);
     return {
@@ -114,6 +121,7 @@ const App = () => {
         </Toolbar>
       </AppBar>
       <Container maxWidth="md" style={{ marginTop: "20px" }}>
+        {/* Route configuration for navigation between home, portfolio, and stock details views */}
         <Routes>
           <Route
             path="/"
@@ -125,7 +133,6 @@ const App = () => {
               />
             }
           />
-
           <Route
             path="/portfolio"
             element={

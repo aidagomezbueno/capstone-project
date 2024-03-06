@@ -1,4 +1,3 @@
-// frontend - StockDetails.js
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
@@ -13,14 +12,16 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
+// Component to display detailed stock information including historical data chart and latest quote
 const StockDetails = () => {
-  const [originalData, setOriginalData] = useState([]);
-  const [details, setDetails] = useState([]);
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [latestQuote, setLatestQuote] = useState(null);
-  const { symbol } = useParams();
+  const [originalData, setOriginalData] = useState([]); // Stores original fetched stock data for chart
+  const [details, setDetails] = useState([]); // Stores filtered or unfiltered stock data for chart rendering
+  const [startDate, setStartDate] = useState(""); // User-selected start date for chart filtering
+  const [endDate, setEndDate] = useState(""); // User-selected end date for chart filtering
+  const [latestQuote, setLatestQuote] = useState(null); // Stores the latest quote information
+  const { symbol } = useParams(); // Retrieves stock symbol from URL parameters
 
+  // Fetches historical stock data on component mount or when the stock symbol changes
   useEffect(() => {
     const fetchDetails = async () => {
       try {
@@ -48,6 +49,7 @@ const StockDetails = () => {
     fetchDetails();
   }, [symbol]);
 
+  // Fetches the latest stock quote on component mount or when the stock symbol changes
   useEffect(() => {
     const fetchLatestQuote = async () => {
       try {
@@ -63,20 +65,23 @@ const StockDetails = () => {
     fetchLatestQuote();
   }, [symbol]);
 
+  // Handles change in start date for chart filtering
   const handleStartDateChange = (e) => {
     const newStartDate = e.target.value;
     setStartDate(newStartDate);
 
-    if (newStartDate && newStartDate > endDate) {
-      setEndDate(""); // Reset the end date if it's before the new start date
+    if (newStartDate && endDate && newStartDate > endDate) {
+      setEndDate(""); // Resets the end date if it is before the new start date
     }
   };
 
+  // Handles change in end date for chart filtering
   const handleEndDateChange = (e) => {
     const newEndDate = e.target.value;
     setEndDate(newEndDate);
   };
 
+  // Filters chart data based on selected start and end dates and updates the chart
   const updateChart = () => {
     const filteredData = originalData.filter((data) => {
       const dataDate = new Date(data.date);
@@ -91,6 +96,7 @@ const StockDetails = () => {
   return (
     <div>
       <h2>Stock Details for {symbol}</h2>
+      {/* Input fields for date filtering and a button to update the chart based on the selected date range */}
       <div
         style={{
           display: "flex",
@@ -99,9 +105,7 @@ const StockDetails = () => {
         }}
       >
         <div style={{ width: "65%", paddingRight: "10px" }}>
-          {" "}
           <div style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
-            {" "}
             <label>
               Start Date:
               <input
@@ -123,15 +127,11 @@ const StockDetails = () => {
               Update Chart
             </button>
           </div>
+          {/* Responsive container for rendering line chart of stock's historical data */}
           <ResponsiveContainer width="100%" height={400}>
             <LineChart
               data={details}
-              margin={{
-                top: 5,
-                right: 30,
-                left: 20,
-                bottom: 5,
-              }}
+              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
             >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
@@ -143,16 +143,17 @@ const StockDetails = () => {
             </LineChart>
           </ResponsiveContainer>
         </div>
-        <div
-          style={{
-            width: "35%",
-            paddingLeft: "10px",
-            display: "flex",
-            flexDirection: "column",
-            gap: "10px",
-          }}
-        >
-          {latestQuote && (
+        {/* Display latest quote information if available */}
+        {latestQuote && (
+          <div
+            style={{
+              width: "35%",
+              paddingLeft: "10px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "10px",
+            }}
+          >
             <div
               style={{
                 padding: "20px",
@@ -160,59 +161,24 @@ const StockDetails = () => {
                 borderRadius: "5px",
               }}
             >
-              <h3
-                style={{
-                  borderBottom: "1px solid #ccc",
-                  paddingBottom: "10px",
-                  marginBottom: "10px",
-                }}
-              >
-                Latest Quote
-              </h3>
-              <div
-                style={{
-                  marginBottom: "10px",
-                  fontSize: "18px",
-                  fontWeight: "bold",
-                }}
-              >
-                <span>Price: </span>
-                <span
-                  style={{
-                    color: latestQuote["09. change"].startsWith("-")
-                      ? "red"
-                      : "green",
-                  }}
-                >
-                  {latestQuote["05. price"]}
-                </span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <div>
-                  <p>Open: {latestQuote["02. open"]}</p>
-                  <p>High: {latestQuote["03. high"]}</p>
-                  <p>Low: {latestQuote["04. low"]}</p>
-                  <p>Volume: {latestQuote["06. volume"].toLocaleString()}</p>
-                  <p>
-                    Latest Trading Day: {latestQuote["07. latest trading day"]}
-                  </p>
-                  <p>Previous Close: {latestQuote["08. previous close"]}</p>
-                </div>
-              </div>
-              <div
-                style={{
-                  marginTop: "10px",
-                  color: latestQuote["09. change"].startsWith("-")
-                    ? "red"
-                    : "green",
-                }}
-              >
+              <h3>Latest Quote</h3>
+              {/* Latest quote details */}
+              <div>
+                <p>Price: {latestQuote["05. price"]}</p>
+                <p>Open: {latestQuote["02. open"]}</p>
+                <p>High: {latestQuote["03. high"]}</p>
+                <p>Low: {latestQuote["04. low"]}</p>
+                <p>Volume: {latestQuote["06. volume"].toLocaleString()}</p>
+                <p>
+                  Latest Trading Day: {latestQuote["07. latest trading day"]}
+                </p>
+                <p>Previous Close: {latestQuote["08. previous close"]}</p>
                 <p>Change: {latestQuote["09. change"]}</p>
                 <p>Change Percent: {latestQuote["10. change percent"]}</p>
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
