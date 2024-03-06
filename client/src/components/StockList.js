@@ -1,5 +1,5 @@
 // frontend - StockList.js
-import React from "react";
+import React, { useState } from "react"; // Make sure to import useState
 import {
   Table,
   TableBody,
@@ -8,11 +8,27 @@ import {
   TableRow,
   Paper,
   Button,
+  TextField, // Import TextField for the input field
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
 const StockList = ({ stocks, onAddToPortfolio, isPortfolioView }) => {
   const navigate = useNavigate();
+
+  // This state will hold the investment amounts for each stock
+  const [investments, setInvestments] = useState({});
+
+  // Handler for when the investment input changes
+  const handleInvestmentChange = (symbol, event) => {
+    const value = event.target.value;
+    setInvestments({ ...investments, [symbol]: value });
+  };
+
+  // Handler for when the "Add to Portfolio" button is clicked
+  const handleAddToPortfolioClick = (symbol) => {
+    // Convert input to a number and call the passed in onAddToPortfolio function
+    onAddToPortfolio(symbol, Number(investments[symbol]));
+  };
 
   return (
     <TableContainer component={Paper}>
@@ -28,9 +44,24 @@ const StockList = ({ stocks, onAddToPortfolio, isPortfolioView }) => {
                     See Details
                   </Button>
                 ) : (
-                  <Button onClick={() => onAddToPortfolio(stock.symbol)}>
-                    Add to Portfolio
-                  </Button>
+                  <>
+                    <TextField
+                      size="small"
+                      type="number"
+                      inputProps={{ step: "0.01" }} // Allows for decimal values
+                      value={investments[stock.symbol] || ""}
+                      onChange={(event) =>
+                        handleInvestmentChange(stock.symbol, event)
+                      }
+                      variant="outlined"
+                      placeholder="Amount"
+                    />
+                    <Button
+                      onClick={() => handleAddToPortfolioClick(stock.symbol)}
+                    >
+                      Add to Portfolio
+                    </Button>
+                  </>
                 )}
               </TableCell>
             </TableRow>
