@@ -14,9 +14,22 @@ To start exploring the app:
 4. Access the portfolio to see your list of symbols, the number of stocks for each one, and the total value of your portfolio.
 5. You have the option to analyze each symbol and visualize historical and current information available.
 
+## Technologies Used
+
+- **Frontend**: React.js
+- **Backend**: Flask (Python)
+- **API**: Alpha Vantage for real-time and historical stock data
+
 ## Project Structure
 
 The project's main components are:
 
 - **Flask Backend (`main.py`)**: Handles API requests to fetch stock data and quotes via the Alpha Vantage API.
 - **React Frontend (`App.js`, `StockList.js` and `StockDetails.js`)**: Renders the application's UI and manages interactions with the backend.
+
+## Features
+
+- Real-time stock market data visualization
+- Portfolio management
+- Historical data charts for individual stocks
+- Responsive design for desktop and mobile users
