@@ -31,10 +31,19 @@ const App = () => {
     console.log("Current portfolioSymbols:", portfolioSymbols);
   }, [portfolioSymbols]); // Runs only when portfolioSymbols changes
 
-  // Function to add a stock symbol to the portfolio if it's not already included
-  const handleAddToPortfolio = (symbol) => {
-    if (!portfolioSymbols.includes(symbol)) {
-      setPortfolioSymbols([...portfolioSymbols, symbol]);
+  // Make sure this function looks like this
+  const handleAddToPortfolio = (symbol, amount) => {
+    const symbolExists = portfolioSymbols.find((s) => s.symbol === symbol);
+    if (!symbolExists) {
+      // If it doesn't exist, add it along with the amount
+      setPortfolioSymbols([...portfolioSymbols, { symbol, amount }]);
+    } else {
+      // If it does exist, update the amount
+      setPortfolioSymbols(
+        portfolioSymbols.map((item) =>
+          item.symbol === symbol ? { ...item, amount } : item
+        )
+      );
     }
   };
 
@@ -49,10 +58,15 @@ const App = () => {
       .filter((stock) => stock.symbol && stock.name);
   };
 
-  // Computes the list of stock objects in the portfolio by mapping over portfolioSymbols and finding each in allStocks
-  const portfolioStocks = portfolioSymbols
-    .map((symbol) => allStocks.find((stock) => stock.symbol === symbol))
-    .filter((stock) => stock); // Filters out any undefined entries
+  const portfolioStocks = allStocks
+    .filter((stock) => portfolioSymbols.find((p) => p.symbol === stock.symbol))
+    .map((stock) => {
+      // Get the amount invested in this stock from the portfolioSymbols
+      const portfolioItem = portfolioSymbols.find(
+        (p) => p.symbol === stock.symbol
+      );
+      return { ...stock, amount: portfolioItem ? portfolioItem.amount : 0 };
+    });
 
   // JSX for rendering the app UI
   return (
@@ -98,7 +112,13 @@ const App = () => {
             path="/portfolio"
             element={
               <StockList
-                stocks={portfolioStocks}
+                stocks={portfolioStocks.map((stock) => ({
+                  ...stock,
+                  // Find the corresponding investment amount for this stock
+                  amount:
+                    portfolioSymbols.find((p) => p.symbol === stock.symbol)
+                      ?.amount || 0,
+                }))}
                 onAddToPortfolio={handleAddToPortfolio}
                 isPortfolioView={true}
               />
