@@ -4,6 +4,7 @@ import { Routes, Route, Link } from "react-router-dom";
 import { AppBar, Toolbar, Typography, Button, Container } from "@mui/material";
 import StockList from "./components/StockList";
 import StockDetails from "./components/StockDetails";
+import Login from "./components/Login";
 
 // Main application component managing routes, stocks data, and portfolio functionality
 const App = () => {
@@ -14,9 +15,10 @@ const App = () => {
   useEffect(() => {
     const fetchStocks = async () => {
       try {
-        const response = await axios.get(
-          "https://aida-mcsbt-integration.lm.r.appspot.com/api/all-stocks"
-        );
+        const response = await axios.get(`/api/all-stocks`);
+        // const response = await axios.get(
+        //   "https://aida-mcsbt-integration.lm.r.appspot.com/api/all-stocks"
+        // );
         const parsedData = parseCSV(response.data);
         setAllStocks(parsedData);
       } catch (error) {
@@ -35,9 +37,10 @@ const App = () => {
   // Handles adding or updating stocks in the portfolio
   const handleAddToPortfolio = async (symbol, newAmount) => {
     try {
-      const response = await axios.get(
-        `https://aida-mcsbt-integration.lm.r.appspot.com/api/quote/${symbol}`
-      );
+      const response = await axios.get(`/api/quote/${symbol}`);
+      // const response = await axios.get(
+      //   `https://aida-mcsbt-integration.lm.r.appspot.com/api/quote/${symbol}`
+      // );
       const lastPrice = parseFloat(response.data["Global Quote"]["05. price"]);
       console.log(`Last Price for ${symbol}:`, lastPrice);
 
@@ -107,6 +110,14 @@ const App = () => {
               to="/"
               style={{ color: "white" }}
             >
+              Login
+            </Button>
+            <Button
+              color="inherit"
+              component={Link}
+              to="/home"
+              style={{ color: "white" }}
+            >
               Home
             </Button>
             <Button
@@ -123,8 +134,9 @@ const App = () => {
       <Container maxWidth="md" style={{ marginTop: "20px" }}>
         {/* Route configuration for navigation between home, portfolio, and stock details views */}
         <Routes>
+          <Route path="/" element={<Login />} />
           <Route
-            path="/"
+            path="/home"
             element={
               <StockList
                 stocks={allStocks}

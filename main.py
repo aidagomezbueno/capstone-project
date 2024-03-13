@@ -1,9 +1,47 @@
 from flask import Flask, jsonify, Response
-from flask_cors import CORS
 import requests
 
+from flask_bcrypt import Bcrypt
+from flask_cors import CORS
+from flask_sqlalchemy import SQLAlchemy
+from itsdangerous.url_safe import URLSafeTimedSerializer as Serializer
+from sqlalchemy.pool import NullPool
+import oracledb
+from models import db
+
 app = Flask(__name__)
-CORS(app, resources={r"*": {"origins": "https://aida_gomezbueno.storage.googleapis.com"}})
+# CORS(app, resources={r"*": {"origins": "https://aida_gomezbueno.storage.googleapis.com"}})
+CORS(app, resources={r"*": {"origins": "http://localhost:3000"}})
+# bcrypt = Bcrypt(app)
+# db = SQLAlchemy(app)
+
+# Database configuration
+un = 'MYAIDA'
+pw = 'AaZZ0r_cle#1'
+
+# dsn = '(description=(retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1522)(host=adb.eu-madrid-1.oraclecloud.com))(connect_data=(service_name=g2525a9be826d67_capstone_high.adb.oraclecloud.com))(security=(ssl_server_dn_match=yes)))'
+# host = 'adb.eu-madrid-1.oraclecloud.com'
+# service_name = 'g2525a9be826d67_capstone_high.adb.oraclecloud.com'
+# port = '1522'
+
+dsn = '(description=(retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1522)(host=adb.eu-madrid-1.oraclecloud.com))(connect_data=(service_name=g2525a9be826d67_capstone_high.adb.oraclecloud.com))(security=(ssl_server_dn_match=yes)))'
+
+pool = oracledb.create_pool(user=un, password=pw,
+                            dsn=dsn)
+app.config['SQLALCHEMY_DATABASE_URI'] = f'oracle+oracledb://{un}:{pw}@{dsn}'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'creator': pool.acquire,
+    'poolclass': NullPool
+}
+app.config['SQLALCHEMY_ECHO'] = True  # cambiar en prod
+
+db = SQLAlchemy()
+# print(app.config)
+db.init_app(app)
+
+with app.app_context():
+    db.create_all()
 
 ALPHA_VANTAGE_API_KEY = 'E8LCWIHQ1EEYAU63'
 STOCK_DATA_URL = 'https://www.alphavantage.co/query'
