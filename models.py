@@ -28,9 +28,10 @@ class User(db.Model):
 
 class Stock(db.Model):
     __tablename__ = 'stock'
-    stock_id = db.Column(db.Integer, primary_key=True)
+    # stock_id = db.Column(db.Integer, primary_key=True)
+    stock_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     symbol = db.Column(db.String(20), unique=True, nullable=False)
-    name = db.Column(db.String(100), nullable=False)
+    name = db.Column(db.String(200), nullable=False)
     
     # Relationship to PortfolioStock
     portfolio_stocks = db.relationship('PortfolioStock', backref='stock', lazy=True)

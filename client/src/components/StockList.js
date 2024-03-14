@@ -48,13 +48,13 @@ const StockList = ({ stocks, onAddToPortfolio, isPortfolioView }) => {
     <TableContainer component={Paper}>
       <Table>
         <TableBody>
-          {stocks.map((stock) => (
-            <TableRow key={stock.symbol}>
+          {stocks.map((stock, index) => (
+            // Use a combination of the stock symbol and the index to ensure uniqueness
+            <TableRow key={stock.symbol + index}>
               <TableCell>{stock.symbol}</TableCell>
               <TableCell>{stock.name}</TableCell>
               <TableCell align="right">
                 {isPortfolioView ? (
-                  // Displays stock details and current holdings for portfolio view
                   <>
                     <Button onClick={() => navigate(`/stock/${stock.symbol}`)}>
                       See Details
@@ -65,7 +65,6 @@ const StockList = ({ stocks, onAddToPortfolio, isPortfolioView }) => {
                     </span>
                   </>
                 ) : (
-                  // Provides input field and button to add stocks to portfolio for non-portfolio view
                   <>
                     <TextField
                       size="small"
@@ -89,7 +88,6 @@ const StockList = ({ stocks, onAddToPortfolio, isPortfolioView }) => {
             </TableRow>
           ))}
           {isPortfolioView && (
-            // Displays total portfolio value for portfolio view
             <TableRow>
               <TableCell colSpan={2} align="left">
                 <b>Total Value:</b>

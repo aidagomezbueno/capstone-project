@@ -7,7 +7,9 @@ from flask_cors import CORS
 from itsdangerous.url_safe import URLSafeTimedSerializer as Serializer
 from sqlalchemy.pool import NullPool
 import oracledb
-from models import db, User
+import csv
+from io import StringIO
+from models import db, User, Stock
 
 app = Flask(__name__)
 # CORS(app, resources={r"*": {"origins": "https://aida_gomezbueno.storage.googleapis.com"}})
@@ -74,25 +76,71 @@ def signup():
         app.logger.error(f"An error occurred: {e}")
         return jsonify({'message': 'An error occurred'}), 500
 
+# @app.route('/api/all-stocks')
+# def get_all_stocks():
+#     # Fetches a list of all stocks with their current listing status from Alpha Vantage API
+#     url = f"{STOCK_DATA_URL}?function=LISTING_STATUS&apikey={ALPHA_VANTAGE_API_KEY}"
+#     try:
+#         # Stream the response to handle large datasets efficiently
+#         def generate():
+#             with requests.get(url, stream=True) as r:
+#                 r.raise_for_status()  # Will raise HTTPError for bad responses
+#                 lines = r.iter_lines()
+#                 for _ in range(1000):  # Limit to the first 1000 lines for demonstration
+#                     try:
+#                         yield next(lines) + b'\n'
+#                     except StopIteration:
+#                         break
+#         return Response(generate(), content_type='text/csv')
+#     except requests.exceptions.HTTPError as errh:
+#         # Handle specific exceptions separately for detailed error logging
+#         return jsonify(error=str(errh)), errh.response.status_code
+#     except requests.exceptions.ConnectionError as errc:
+#         return jsonify(error=str(errc)), 503
+#     except requests.exceptions.Timeout as errt:
+#         return jsonify(error=str(errt)), 504
+#     except requests.exceptions.RequestException as err:
+#         return jsonify(error=str(err)), 500
+
 @app.route('/api/all-stocks')
 def get_all_stocks():
-    # Fetches a list of all stocks with their current listing status from Alpha Vantage API
-    url = f"{STOCK_DATA_URL}?function=LISTING_STATUS&apikey={ALPHA_VANTAGE_API_KEY}"
+    # url = f"{STOCK_DATA_URL}?function=LISTING_STATUS&apikey={ALPHA_VANTAGE_API_KEY}"
     try:
-        # Stream the response to handle large datasets efficiently
-        def generate():
-            with requests.get(url, stream=True) as r:
-                r.raise_for_status()  # Will raise HTTPError for bad responses
-                lines = r.iter_lines()
-                for _ in range(1000):  # Limit to the first 1000 lines for demonstration
-                    try:
-                        yield next(lines) + b'\n'
-                    except StopIteration:
-                        break
-        return Response(generate(), content_type='text/csv')
+        # response = requests.get(url)
+        # response.raise_for_status()
+        
+        # # Parse CSV data
+        # csv_data = StringIO(response.text)
+        # csv_reader = csv.reader(csv_data, delimiter=',')
+        
+        # # Skip the header
+        # next(csv_reader)
+        
+        # row_count = 0
+        
+        # for row in csv_reader:
+        #     if row_count >= 1000:  # Stop after 1000 symbols
+        #         break
+        #     symbol, name = row[0], row[1].strip()
+            
+        #     if not name:
+        #         name = symbol
+
+        #     stock = Stock.query.filter_by(symbol=symbol).first()
+        #     if not stock:
+        #         # If not, add it to the database
+        #         new_stock = Stock(symbol=symbol, name=name)
+        #         db.session.add(new_stock)
+        #     row_count += 1
+        # db.session.commit()
+
+        # Fetch all stocks from the database to serve to the frontend
+        stocks = Stock.query.all()
+        stocks_data = [{'symbol': stock.symbol, 'name': stock.name} for stock in stocks]
+
+        return jsonify(stocks_data)
     except requests.exceptions.HTTPError as errh:
-        # Handle specific exceptions separately for detailed error logging
-        return jsonify(error=str(errh)), errh.response.status_code
+        return jsonify(error=str(errh)), 500
     except requests.exceptions.ConnectionError as errc:
         return jsonify(error=str(errc)), 503
     except requests.exceptions.Timeout as errt:

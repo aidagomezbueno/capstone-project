@@ -13,16 +13,29 @@ const App = () => {
   const [portfolioSymbols, setPortfolioSymbols] = useState([]); // Tracks user's portfolio stocks
   const { isAuthenticated, logout: contextLogout } = useAuth();
 
+  // // Fetches all stocks data on component mount
+  // useEffect(() => {
+  //   const fetchStocks = async () => {
+  //     try {
+  //       const response = await axios.get(`/api/all-stocks`);
+  //       console.log(response.data); // Add this line to log the data
+  //       const parsedData = parseCSV(response.data);
+  //       setAllStocks(parsedData);
+  //     } catch (error) {
+  //       console.error("Error fetching stocks:", error);
+  //     }
+  //   };
+
+  //   fetchStocks();
+  // }, []);
+
   // Fetches all stocks data on component mount
   useEffect(() => {
     const fetchStocks = async () => {
       try {
         const response = await axios.get(`/api/all-stocks`);
-        // const response = await axios.get(
-        //   "https://aida-mcsbt-integration.lm.r.appspot.com/api/all-stocks"
-        // );
-        const parsedData = parseCSV(response.data);
-        setAllStocks(parsedData);
+        // console.log(response.data); // This should show the JSON data
+        setAllStocks(response.data); // Use the JSON data directly
       } catch (error) {
         console.error("Error fetching stocks:", error);
       }
@@ -74,17 +87,17 @@ const App = () => {
     }
   };
 
-  // Parses CSV data into JSON
-  const parseCSV = (data) => {
-    return data
-      .split("\n")
-      .slice(1)
-      .map((line) => {
-        const [symbol, name] = line.split(",");
-        return { symbol, name };
-      })
-      .filter((stock) => stock.symbol && stock.name);
-  };
+  // // Parses CSV data into JSON
+  // const parseCSV = (data) => {
+  //   return data
+  //     .split("\n")
+  //     .slice(1)
+  //     .map((line) => {
+  //       const [symbol, name] = line.split(",");
+  //       return { symbol, name };
+  //     })
+  //     .filter((stock) => stock.symbol && stock.name);
+  // };
 
   // Maps portfolio symbols to their corresponding stock details
   const portfolioStocks = portfolioSymbols.map((portfolioItem) => {
