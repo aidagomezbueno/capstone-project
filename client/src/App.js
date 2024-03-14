@@ -13,22 +13,6 @@ const App = () => {
   const [portfolioSymbols, setPortfolioSymbols] = useState([]); // Tracks user's portfolio stocks
   const { isAuthenticated, logout: contextLogout } = useAuth();
 
-  // // Fetches all stocks data on component mount
-  // useEffect(() => {
-  //   const fetchStocks = async () => {
-  //     try {
-  //       const response = await axios.get(`/api/all-stocks`);
-  //       console.log(response.data); // Add this line to log the data
-  //       const parsedData = parseCSV(response.data);
-  //       setAllStocks(parsedData);
-  //     } catch (error) {
-  //       console.error("Error fetching stocks:", error);
-  //     }
-  //   };
-
-  //   fetchStocks();
-  // }, []);
-
   // Fetches all stocks data on component mount
   useEffect(() => {
     const fetchStocks = async () => {
@@ -86,18 +70,6 @@ const App = () => {
       console.error("Error fetching the latest price:", error);
     }
   };
-
-  // // Parses CSV data into JSON
-  // const parseCSV = (data) => {
-  //   return data
-  //     .split("\n")
-  //     .slice(1)
-  //     .map((line) => {
-  //       const [symbol, name] = line.split(",");
-  //       return { symbol, name };
-  //     })
-  //     .filter((stock) => stock.symbol && stock.name);
-  // };
 
   // Maps portfolio symbols to their corresponding stock details
   const portfolioStocks = portfolioSymbols.map((portfolioItem) => {

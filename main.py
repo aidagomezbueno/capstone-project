@@ -9,7 +9,10 @@ from sqlalchemy.pool import NullPool
 import oracledb
 import csv
 from io import StringIO
-from models import db, User, Stock
+from datetime import date
+from models import db, Stock, Portfolio, PortfolioStock, User
+from flask import session
+import secrets
 
 app = Flask(__name__)
 # CORS(app, resources={r"*": {"origins": "https://aida_gomezbueno.storage.googleapis.com"}})
@@ -28,6 +31,7 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'poolclass': NullPool
 }
 app.config['SQLALCHEMY_ECHO'] = True 
+app.config['SECRET_KEY'] = secrets.token_hex(16)
 db.init_app(app)
 
 with app.app_context():
@@ -47,6 +51,7 @@ def login():
         print(user)
 
         if user and user.check_password(password):
+            session['user_id'] = user.user_id
             return jsonify({'message': 'Login successful'}), 200
         else:
             return jsonify({'message': 'Invalid username or password'}), 401
@@ -181,3 +186,82 @@ def get_latest_quote(symbol):
         return jsonify(error=str(errt)), 504
     except requests.exceptions.RequestException as err:
         return jsonify(error=str(err)), 500
+
+@app.route('/api/quote/<symbol>')
+def fetch_latest_quote_price(symbol):
+    # Fetches the latest stock quote for a specific symbol from Alpha Vantage API
+    url = f"{STOCK_DATA_URL}?function=GLOBAL_QUOTE&symbol={symbol}&apikey={ALPHA_VANTAGE_API_KEY}"
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        # Parse the price from the response
+        last_price = float(response.json()["Global Quote"]["05. price"])
+        return last_price
+    except Exception as e:
+        # Handle exceptions and return a meaningful error message
+        return jsonify({'message': str(e)}), 500
+
+@app.route('/api/portfolio/add', methods=['POST'])
+def add_to_portfolio():
+    data = request.json
+    symbol = data.get('symbol')
+    quantity = data.get('quantity')
+    user_id = session.get('user_id')  # This should be retrieved from the session or another secure source
+    
+    # Ensure there is a logged-in user
+    if not user_id:
+        return jsonify({'message': 'User is not logged in.'}), 401
+    
+    latest_price = fetch_latest_quote_price(symbol)
+    print(latest_price)
+    # if not isinstance(latest_price, float):
+    #     return latest_price  # This should already be a jsonify'ed error response from get_latest_quote
+    
+    if isinstance(latest_price, (int, float)):
+        # Fetch the stock based on the symbol
+        stock = Stock.query.filter_by(symbol=symbol).first()
+        if not stock:
+            return jsonify({'message': 'Stock not found'}), 404
+        
+        # Fetch the portfolio for the user, or create it if it doesn't exist
+        portfolio = Portfolio.query.filter_by(user_id=user_id).first()
+        if not portfolio:
+            portfolio = Portfolio(user_id=user_id)
+            db.session.add(portfolio)
+            db.session.commit()
+        
+        # Create a new PortfolioStock entry
+        new_entry = PortfolioStock(
+            portfolio_id=portfolio.portfolio_id,
+            stock_id=stock.stock_id,
+            quantity=quantity,
+            acquisition_price=latest_price,
+            acquisition_date=date.today()
+        )
+        db.session.add(new_entry)
+        db.session.commit()
+    else:
+        # If latest_price is not a float or int, it means an error occurred
+        return jsonify({'message': 'Failed to fetch the latest stock price'}), latest_price.status_code
+
+    return jsonify({'message': 'Stock added to portfolio'}), 200
+
+@app.route('/api/user/portfolio', methods=['GET'])
+def get_user_portfolio():
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'message': 'User not logged in'}), 401
+    
+    portfolio_stocks = PortfolioStock.query.join(Stock, PortfolioStock.stock_id == Stock.stock_id).filter(PortfolioStock.portfolio_id == Portfolio.query.filter_by(user_id=user_id).first().portfolio_id).all()
+
+    portfolio_data = [
+        {
+            'symbol': stock.stock.symbol,
+            'name': stock.stock.name,
+            'quantity': stock.quantity,
+            'acquisition_price': stock.acquisition_price
+        } for stock in portfolio_stocks
+    ]
+
+    return jsonify(portfolio_data)
+

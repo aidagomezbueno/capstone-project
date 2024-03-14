@@ -2,6 +2,8 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from flask_bcrypt import generate_password_hash, check_password_hash
 from flask_bcrypt import Bcrypt
+from sqlalchemy import Sequence
+from sqlalchemy.schema import FetchedValue
 
 db = SQLAlchemy()
 bcrypt = Bcrypt()
@@ -38,7 +40,10 @@ class Stock(db.Model):
 
 class Portfolio(db.Model):
     __tablename__ = 'portfolio'
-    portfolio_id = db.Column(db.Integer, primary_key=True)
+    portfolio_id = db.Column(db.Integer,
+                             Sequence('portfolio_id_seq'),
+                             primary_key=True,
+                             server_default=FetchedValue())
     user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
     created_at = db.Column(db.TIMESTAMP(timezone=True), default=datetime.utcnow)
     updated_at = db.Column(db.TIMESTAMP(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)

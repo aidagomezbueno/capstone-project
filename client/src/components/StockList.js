@@ -10,6 +10,7 @@ import {
   TextField,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 // Displays a list of stocks, allowing users to view stock details or add them to their portfolio
 const StockList = ({ stocks, onAddToPortfolio, isPortfolioView }) => {
@@ -29,16 +30,30 @@ const StockList = ({ stocks, onAddToPortfolio, isPortfolioView }) => {
     setInvestments({ ...investments, [symbol]: value });
   };
 
-  // Handles the addition of a stock to the portfolio
-  const handleAddToPortfolioClick = (symbol) => {
+  // This function is now updated to make an API call
+  const handleAddToPortfolioClick = async (symbol) => {
     const investmentAmount = Number(investments[symbol]);
     if (investmentAmount > 0) {
-      onAddToPortfolio(symbol, investmentAmount);
-      // Clears the input field after adding to portfolio
-      setInvestments((prevInvestments) => ({
-        ...prevInvestments,
-        [symbol]: "",
-      }));
+      try {
+        // Call the backend endpoint to add the stock to the portfolio
+        const response = await axios.post(
+          "/api/portfolio/add",
+          {
+            symbol: symbol,
+            quantity: investmentAmount,
+          },
+          {
+            withCredentials: true, // Make sure to send the credentials to maintain the session
+          }
+        );
+
+        if (response.status === 200) {
+          console.log("Stock added to portfolio", response.data);
+        }
+      } catch (error) {
+        console.error("Error adding stock to portfolio:", error.response.data);
+        alert(`Error: ${error.response.data.message}`);
+      }
     } else {
       alert("Please enter a valid investment amount.");
     }
