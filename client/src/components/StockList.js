@@ -39,8 +39,8 @@ const StockList = ({ stocks, onAddToPortfolio, isPortfolioView }) => {
   const displayedStocks = isPortfolioView ? portfolioStocks : stocks;
 
   const totalValue = displayedStocks.reduce((total, stock) => {
-    const quantity = Number(stock.quantity) || 0; 
-    const acquisitionPrice = Number(stock.acquisition_price) || 0; 
+    const quantity = Number(stock.quantity) || 0;
+    const acquisitionPrice = Number(stock.acquisition_price) || 0;
     return total + quantity * acquisitionPrice;
   }, 0);
 
@@ -50,7 +50,6 @@ const StockList = ({ stocks, onAddToPortfolio, isPortfolioView }) => {
     setInvestments({ ...investments, [symbol]: value });
   };
 
-  // This function is now updated to make an API call
   const handleAddToPortfolioClick = async (symbol) => {
     const investmentAmount = Number(investments[symbol]);
     if (investmentAmount > 0) {
@@ -63,12 +62,15 @@ const StockList = ({ stocks, onAddToPortfolio, isPortfolioView }) => {
             quantity: investmentAmount,
           },
           {
-            withCredentials: true, // Make sure to send the credentials to maintain the session
+            withCredentials: true, 
           }
         );
-
         if (response.status === 200) {
           console.log("Stock added to portfolio", response.data);
+          setInvestments((prevInvestments) => ({
+            ...prevInvestments,
+            [symbol]: "",
+          }));
         }
       } catch (error) {
         console.error("Error adding stock to portfolio:", error.response.data);
@@ -76,6 +78,34 @@ const StockList = ({ stocks, onAddToPortfolio, isPortfolioView }) => {
       }
     } else {
       alert("Please enter a valid investment amount.");
+    }
+  };
+
+  const handleRemoveFromPortfolioClick = async (symbol) => {
+    try {
+      const response = await axios.post(
+        "/api/portfolio/remove",
+        { symbol },
+        { withCredentials: true }
+      );
+      if (response.status === 200) {
+        console.log("Stock removed from portfolio", response.data);
+        if (response.data.updated_quantity === 0) {
+          setPortfolioStocks((prevPortfolioStocks) =>
+            prevPortfolioStocks.filter((stock) => stock.symbol !== symbol)
+          );
+        } else {
+          setPortfolioStocks((prevPortfolioStocks) =>
+            prevPortfolioStocks.map((stock) =>
+              stock.symbol === symbol
+                ? { ...stock, quantity: stock.quantity - 1 }
+                : stock
+            )
+          );
+        }
+      }
+    } catch (error) {
+      alert("There're no more stocks to remove");
     }
   };
 
@@ -97,6 +127,13 @@ const StockList = ({ stocks, onAddToPortfolio, isPortfolioView }) => {
                     <span style={{ marginLeft: "10px" }}>
                       ${stock.acquisition_price.toFixed(2)}
                     </span>
+                    <Button
+                      onClick={() =>
+                        handleRemoveFromPortfolioClick(stock.symbol)
+                      }
+                    >
+                      Remove 1
+                    </Button>
                   </>
                 ) : (
                   <>

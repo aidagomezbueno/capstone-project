@@ -245,3 +245,42 @@ def get_user_portfolio():
     ]
 
     return jsonify(portfolio_data)
+
+@app.route('/api/portfolio/remove', methods=['POST'])
+def remove_from_portfolio():
+    data = request.json
+    symbol = data.get('symbol')
+    user_id = session.get('user_id')
+
+    if not user_id:
+        return jsonify({'message': 'User is not logged in.'}), 401
+
+    portfolio = Portfolio.query.filter_by(user_id=user_id).first()
+    if not portfolio:
+        return jsonify({'message': 'Portfolio not found'}), 404
+
+    stock = Stock.query.filter_by(symbol=symbol).first()
+    if not stock:
+        return jsonify({'message': 'Stock not found'}), 404
+
+    portfolio_stock = PortfolioStock.query.filter_by(
+        portfolio_id=portfolio.portfolio_id,
+        stock_id=stock.stock_id
+    ).first()
+
+    if not portfolio_stock:
+        return jsonify({'message': 'Stock not in portfolio'}), 404
+
+    if portfolio_stock.quantity > 1:
+        portfolio_stock.quantity -= 1
+        message = 'Stock quantity decreased in portfolio'
+    else:
+        db.session.delete(portfolio_stock)
+        message = 'Stock removed from portfolio'
+
+    db.session.commit()
+
+    return jsonify({
+        'message': message,
+        'updated_quantity': portfolio_stock.quantity if portfolio_stock.quantity > 0 else 0
+    }), 200
