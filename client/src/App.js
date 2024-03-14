@@ -5,11 +5,13 @@ import { AppBar, Toolbar, Typography, Button, Container } from "@mui/material";
 import StockList from "./components/StockList";
 import StockDetails from "./components/StockDetails";
 import Login from "./components/Login";
+import { AuthProvider, useAuth } from "./AuthContext";
 
 // Main application component managing routes, stocks data, and portfolio functionality
 const App = () => {
   const [allStocks, setAllStocks] = useState([]); // Holds all stock data
   const [portfolioSymbols, setPortfolioSymbols] = useState([]); // Tracks user's portfolio stocks
+  const { isAuthenticated, logout: contextLogout } = useAuth();
 
   // Fetches all stocks data on component mount
   useEffect(() => {
@@ -96,6 +98,10 @@ const App = () => {
 
   console.log("Portfolio Stocks with prices: ", portfolioStocks);
 
+  const handleLogout = () => {
+    contextLogout();
+  };
+
   return (
     <>
       <AppBar position="static" style={{ backgroundColor: "#1976d2" }}>
@@ -104,35 +110,46 @@ const App = () => {
             WealthWise
           </Typography>
           <div>
-            <Button
-              color="inherit"
-              component={Link}
-              to="/"
-              style={{ color: "white" }}
-            >
-              Login
-            </Button>
-            <Button
-              color="inherit"
-              component={Link}
-              to="/home"
-              style={{ color: "white" }}
-            >
-              Home
-            </Button>
-            <Button
-              color="inherit"
-              component={Link}
-              to="/portfolio"
-              style={{ color: "white" }}
-            >
-              My Portfolio
-            </Button>
+            {isAuthenticated ? (
+              <>
+                <Button
+                  color="inherit"
+                  component={Link}
+                  to="/home"
+                  style={{ color: "white" }}
+                >
+                  Home
+                </Button>
+                <Button
+                  color="inherit"
+                  component={Link}
+                  to="/portfolio"
+                  style={{ color: "white" }}
+                >
+                  My Portfolio
+                </Button>
+                <Button
+                  color="inherit"
+                  onClick={handleLogout}
+                  style={{ color: "white" }}
+                >
+                  Log Out
+                </Button>
+              </>
+            ) : (
+              <Button
+                color="inherit"
+                component={Link}
+                to="/"
+                style={{ color: "white" }}
+              >
+                Login
+              </Button>
+            )}
           </div>
         </Toolbar>
       </AppBar>
       <Container maxWidth="md" style={{ marginTop: "20px" }}>
-        {/* Route configuration for navigation between home, portfolio, and stock details views */}
         <Routes>
           <Route path="/" element={<Login />} />
           <Route
