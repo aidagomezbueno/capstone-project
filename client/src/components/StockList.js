@@ -9,11 +9,13 @@ import {
   Button,
   TextField,
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 
 // Displays a list of stocks, allowing users to view stock details or add them to their portfolio
-const StockList = ({ stocks, onAddToPortfolio, isPortfolioView }) => {
+const StockList = ({ stocks, isPortfolioView }) => {
+  const { symbol } = useParams();
+
   const navigate = useNavigate();
   const [portfolioStocks, setPortfolioStocks] = useState([]);
   const [investments, setInvestments] = useState({}); // Tracks user inputs for investment amounts
@@ -21,9 +23,15 @@ const StockList = ({ stocks, onAddToPortfolio, isPortfolioView }) => {
   useEffect(() => {
     const fetchPortfolioStocks = async () => {
       try {
-        const response = await axios.get("/api/user/portfolio", {
-          withCredentials: true,
-        });
+        const response = await axios.get(
+          `https://aida-mcsbt-integration.lm.r.appspot.com/api/stock/${symbol}`,
+          {
+            withCredentials: true,
+          }
+        );
+        // const response = await axios.get("/api/user/portfolio", {
+        //   withCredentials: true,
+        // });
         console.log("Portfolio stocks fetched:", response.data);
         setPortfolioStocks(response.data);
       } catch (error) {
@@ -56,13 +64,13 @@ const StockList = ({ stocks, onAddToPortfolio, isPortfolioView }) => {
       try {
         // Call the backend endpoint to add the stock to the portfolio
         const response = await axios.post(
-          "/api/portfolio/add",
+          `https://aida-mcsbt-integration.lm.r.appspot.com/api/portfolio/add`,
           {
             symbol: symbol,
             quantity: investmentAmount,
           },
           {
-            withCredentials: true, 
+            withCredentials: true,
           }
         );
         if (response.status === 200) {
@@ -84,7 +92,7 @@ const StockList = ({ stocks, onAddToPortfolio, isPortfolioView }) => {
   const handleRemoveFromPortfolioClick = async (symbol) => {
     try {
       const response = await axios.post(
-        "/api/portfolio/remove",
+        `https://aida-mcsbt-integration.lm.r.appspot.com/api/portfolio/remove`,
         { symbol },
         { withCredentials: true }
       );

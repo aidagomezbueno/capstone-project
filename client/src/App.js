@@ -17,8 +17,10 @@ const App = () => {
   useEffect(() => {
     const fetchStocks = async () => {
       try {
-        const response = await axios.get(`/api/all-stocks`);
-        setAllStocks(response.data); 
+        const response = await axios.get(
+          `https://aida-mcsbt-integration.lm.r.appspot.com/api/quote/${symbol}`
+        );
+        setAllStocks(response.data);
       } catch (error) {
         console.error("Error fetching stocks:", error);
       }
@@ -35,10 +37,10 @@ const App = () => {
   // Handles adding or updating stocks in the portfolio
   const handleAddToPortfolio = async (symbol, newAmount) => {
     try {
-      const response = await axios.get(`/api/quote/${symbol}`);
-      // const response = await axios.get(
-      //   `https://aida-mcsbt-integration.lm.r.appspot.com/api/quote/${symbol}`
-      // );
+      // const response = await axios.get(`/api/quote/${symbol}`);
+      const response = await axios.get(
+        `https://aida-mcsbt-integration.lm.r.appspot.com/api/quote/${symbol}`
+      );
       const lastPrice = parseFloat(response.data["Global Quote"]["05. price"]);
       console.log(`Last Price for ${symbol}:`, lastPrice);
 

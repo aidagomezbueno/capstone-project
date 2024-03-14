@@ -18,17 +18,17 @@ const Login = () => {
     event.preventDefault();
     setLoading(true);
     try {
-      //   const response = await axios.post(
-      //     "https://aida-mcsbt-integration.lm.r.appspot.com/login",
-      //     {
-      //       username,
-      //       password,
-      //     }
-      //   );
-      const response = await axios.post("/login", {
-        username,
-        password,
-      });
+      const response = await axios.post(
+        "https://aida-mcsbt-integration.lm.r.appspot.com/login",
+        {
+          username,
+          password,
+        }
+      );
+      // const response = await axios.post("/login", {
+      //   username,
+      //   password,
+      // });
       setLoading(false);
       setSnackbarOpen(true);
       login();
@@ -43,10 +43,13 @@ const Login = () => {
 
   const handleSignUp = async () => {
     try {
-      const response = await axios.post("/signup", {
-        name: username,
-        password,
-      });
+      const response = await axios.post(
+        "https://aida-mcsbt-integration.lm.r.appspot.com/signup",
+        {
+          name: username,
+          password,
+        }
+      );
       console.log(response.data.message);
     } catch (error) {
       console.error(

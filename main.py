@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, Response, request
 import requests
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 from itsdangerous.url_safe import URLSafeTimedSerializer as Serializer
 from sqlalchemy.pool import NullPool
 import oracledb
@@ -12,8 +12,11 @@ from flask import session
 import secrets
 
 app = Flask(__name__)
-# CORS(app, resources={r"*": {"origins": "https://aida_gomezbueno.storage.googleapis.com"}})
-CORS(app, resources={r"*": {"origins": "http://localhost:3000"}})
+# CORS(app)
+CORS(app, resources={r"*": {"origins": "https://aida_gomezbueno.storage.googleapis.com"}})
+# CORS(app, resources={r"*": {"origins": "*"}})
+# CORS(app, supports_credentials=True)
+# CORS(app, resources={r"*": {"origins": "http://localhost:3000"}})
 
 un = 'MYAIDA'
 pw = 'AaZZ0r_cle#1'
@@ -38,6 +41,7 @@ ALPHA_VANTAGE_API_KEY = 'E8LCWIHQ1EEYAU63'
 STOCK_DATA_URL = 'https://www.alphavantage.co/query'
 
 @app.route('/login', methods=['POST'])
+@cross_origin()
 def login():
     try:
         data = request.json
