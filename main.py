@@ -1,29 +1,20 @@
-from flask import Flask, jsonify, Response
+from flask import Flask, jsonify, Response, request
 import requests
-
+from flask_bcrypt import check_password_hash, generate_password_hash
 from flask_bcrypt import Bcrypt
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from itsdangerous.url_safe import URLSafeTimedSerializer as Serializer
 from sqlalchemy.pool import NullPool
 import oracledb
-from models import db
+from models import db, User
 
 app = Flask(__name__)
 # CORS(app, resources={r"*": {"origins": "https://aida_gomezbueno.storage.googleapis.com"}})
 CORS(app, resources={r"*": {"origins": "http://localhost:3000"}})
-# bcrypt = Bcrypt(app)
-# db = SQLAlchemy(app)
 
-# Database configuration
 un = 'MYAIDA'
 pw = 'AaZZ0r_cle#1'
-
-# dsn = '(description=(retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1522)(host=adb.eu-madrid-1.oraclecloud.com))(connect_data=(service_name=g2525a9be826d67_capstone_high.adb.oraclecloud.com))(security=(ssl_server_dn_match=yes)))'
-# host = 'adb.eu-madrid-1.oraclecloud.com'
-# service_name = 'g2525a9be826d67_capstone_high.adb.oraclecloud.com'
-# port = '1522'
-
 dsn = '(description=(retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1522)(host=adb.eu-madrid-1.oraclecloud.com))(connect_data=(service_name=g2525a9be826d67_capstone_high.adb.oraclecloud.com))(security=(ssl_server_dn_match=yes)))'
 
 pool = oracledb.create_pool(user=un, password=pw,
@@ -34,10 +25,7 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'creator': pool.acquire,
     'poolclass': NullPool
 }
-app.config['SQLALCHEMY_ECHO'] = True  # cambiar en prod
-
-db = SQLAlchemy()
-# print(app.config)
+app.config['SQLALCHEMY_ECHO'] = True 
 db.init_app(app)
 
 with app.app_context():
@@ -45,6 +33,47 @@ with app.app_context():
 
 ALPHA_VANTAGE_API_KEY = 'E8LCWIHQ1EEYAU63'
 STOCK_DATA_URL = 'https://www.alphavantage.co/query'
+
+@app.route('/login', methods=['POST'])
+def login():
+    try:
+        data = request.json
+        username = data.get('username')
+        password = data.get('password')
+
+        user = User.query.filter_by(name=username).first()
+        print(user)
+
+        if user and user.check_password(password):
+            return jsonify({'message': 'Login successful'}), 200
+        else:
+            return jsonify({'message': 'Invalid username or password'}), 401
+    except Exception as e:
+        app.logger.error(f"An error occurred: {e}")
+        return jsonify({'message': 'An error occurred'}), 500
+    
+
+@app.route('/signup', methods=['POST'])
+def signup():
+    try:
+        data = request.json
+        username = data.get('name')
+        password = data.get('password')
+
+        existing_user = User.query.filter_by(name=username).first()
+        if existing_user:
+            return jsonify({'message': 'User already exists'}), 409
+
+        new_user = User(name=username)
+        new_user.set_password(password)
+        
+        db.session.add(new_user)
+        db.session.commit()
+
+        return jsonify({'message': 'User created successfully'}), 201
+    except Exception as e:
+        app.logger.error(f"An error occurred: {e}")
+        return jsonify({'message': 'An error occurred'}), 500
 
 @app.route('/api/all-stocks')
 def get_all_stocks():
