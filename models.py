@@ -59,3 +59,13 @@ class PortfolioStock(db.Model):
     quantity = db.Column(db.Integer, nullable=False)
     acquisition_price = db.Column(db.Float, nullable=False)
     acquisition_date = db.Column(db.Date, nullable=False)
+    
+    def to_dict(self):
+        return {
+            'portfolio_stock_id': self.portfolio_stock_id,
+            'portfolio_id': self.portfolio_id,
+            'stock_id': self.stock_id,
+            'quantity': self.quantity,
+            'acquisition_price': self.acquisition_price,
+            'acquisition_date': self.acquisition_date.isoformat()  # Assuming this is a date
+        }

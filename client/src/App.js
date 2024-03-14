@@ -18,8 +18,7 @@ const App = () => {
     const fetchStocks = async () => {
       try {
         const response = await axios.get(`/api/all-stocks`);
-        // console.log(response.data); // This should show the JSON data
-        setAllStocks(response.data); // Use the JSON data directly
+        setAllStocks(response.data); 
       } catch (error) {
         console.error("Error fetching stocks:", error);
       }
@@ -49,14 +48,12 @@ const App = () => {
             (s) => s.symbol === symbol
           );
           if (existingSymbol) {
-            // Update amount if symbol already exists
             return currentSymbols.map((s) =>
               s.symbol === symbol
                 ? { ...s, amount: s.amount + newAmount, lastPrice }
                 : s
             );
           } else {
-            // Add new symbol to portfolio
             return [
               ...currentSymbols,
               { symbol, amount: newAmount, lastPrice },

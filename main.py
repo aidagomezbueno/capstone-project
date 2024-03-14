@@ -1,14 +1,11 @@
 from flask import Flask, jsonify, Response, request
 import requests
-from flask_bcrypt import check_password_hash, generate_password_hash
-# from flask_bcrypt import Bcrypt
 from flask_cors import CORS
-# from flask_sqlalchemy import SQLAlchemy
 from itsdangerous.url_safe import URLSafeTimedSerializer as Serializer
 from sqlalchemy.pool import NullPool
 import oracledb
-import csv
-from io import StringIO
+# import csv
+# from io import StringIO
 from datetime import date
 from models import db, Stock, Portfolio, PortfolioStock, User
 from flask import session
@@ -80,32 +77,6 @@ def signup():
     except Exception as e:
         app.logger.error(f"An error occurred: {e}")
         return jsonify({'message': 'An error occurred'}), 500
-
-# @app.route('/api/all-stocks')
-# def get_all_stocks():
-#     # Fetches a list of all stocks with their current listing status from Alpha Vantage API
-#     url = f"{STOCK_DATA_URL}?function=LISTING_STATUS&apikey={ALPHA_VANTAGE_API_KEY}"
-#     try:
-#         # Stream the response to handle large datasets efficiently
-#         def generate():
-#             with requests.get(url, stream=True) as r:
-#                 r.raise_for_status()  # Will raise HTTPError for bad responses
-#                 lines = r.iter_lines()
-#                 for _ in range(1000):  # Limit to the first 1000 lines for demonstration
-#                     try:
-#                         yield next(lines) + b'\n'
-#                     except StopIteration:
-#                         break
-#         return Response(generate(), content_type='text/csv')
-#     except requests.exceptions.HTTPError as errh:
-#         # Handle specific exceptions separately for detailed error logging
-#         return jsonify(error=str(errh)), errh.response.status_code
-#     except requests.exceptions.ConnectionError as errc:
-#         return jsonify(error=str(errc)), 503
-#     except requests.exceptions.Timeout as errt:
-#         return jsonify(error=str(errt)), 504
-#     except requests.exceptions.RequestException as err:
-#         return jsonify(error=str(err)), 500
 
 @app.route('/api/all-stocks')
 def get_all_stocks():
@@ -205,46 +176,56 @@ def fetch_latest_quote_price(symbol):
 def add_to_portfolio():
     data = request.json
     symbol = data.get('symbol')
-    quantity = data.get('quantity')
-    user_id = session.get('user_id')  # This should be retrieved from the session or another secure source
-    
-    # Ensure there is a logged-in user
+    added_quantity = data.get('quantity')
+    user_id = session.get('user_id')
+
     if not user_id:
         return jsonify({'message': 'User is not logged in.'}), 401
-    
+
     latest_price = fetch_latest_quote_price(symbol)
-    print(latest_price)
-    # if not isinstance(latest_price, float):
-    #     return latest_price  # This should already be a jsonify'ed error response from get_latest_quote
-    
+
     if isinstance(latest_price, (int, float)):
-        # Fetch the stock based on the symbol
         stock = Stock.query.filter_by(symbol=symbol).first()
         if not stock:
             return jsonify({'message': 'Stock not found'}), 404
-        
-        # Fetch the portfolio for the user, or create it if it doesn't exist
+
         portfolio = Portfolio.query.filter_by(user_id=user_id).first()
         if not portfolio:
             portfolio = Portfolio(user_id=user_id)
             db.session.add(portfolio)
             db.session.commit()
-        
-        # Create a new PortfolioStock entry
-        new_entry = PortfolioStock(
-            portfolio_id=portfolio.portfolio_id,
-            stock_id=stock.stock_id,
-            quantity=quantity,
-            acquisition_price=latest_price,
-            acquisition_date=date.today()
-        )
-        db.session.add(new_entry)
-        db.session.commit()
-    else:
-        # If latest_price is not a float or int, it means an error occurred
-        return jsonify({'message': 'Failed to fetch the latest stock price'}), latest_price.status_code
 
-    return jsonify({'message': 'Stock added to portfolio'}), 200
+        # Check if the stock is already in the portfolio
+        portfolio_stock = PortfolioStock.query.filter_by(
+            portfolio_id=portfolio.portfolio_id,
+            stock_id=stock.stock_id
+        ).first()
+
+        if portfolio_stock:
+            # If it exists, update the quantity
+            portfolio_stock.quantity += added_quantity
+        else:
+            # If not, create a new PortfolioStock entry
+            portfolio_stock = PortfolioStock(
+                portfolio_id=portfolio.portfolio_id,
+                stock_id=stock.stock_id,
+                quantity=added_quantity,
+                acquisition_price=latest_price,
+                acquisition_date=date.today()
+            )
+            db.session.add(portfolio_stock)
+
+        db.session.commit()
+
+        # You may return the updated quantity in the response if you wish
+        return jsonify({
+            'message': 'Stock quantity updated in portfolio',
+            'updated_quantity': portfolio_stock.quantity
+        }), 200
+
+    else:
+        return jsonify({'message': 'Failed to fetch the latest stock price'}), 500
+
 
 @app.route('/api/user/portfolio', methods=['GET'])
 def get_user_portfolio():
@@ -264,4 +245,3 @@ def get_user_portfolio():
     ]
 
     return jsonify(portfolio_data)
-

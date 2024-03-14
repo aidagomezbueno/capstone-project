@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -15,13 +15,33 @@ import axios from "axios";
 // Displays a list of stocks, allowing users to view stock details or add them to their portfolio
 const StockList = ({ stocks, onAddToPortfolio, isPortfolioView }) => {
   const navigate = useNavigate();
+  const [portfolioStocks, setPortfolioStocks] = useState([]);
   const [investments, setInvestments] = useState({}); // Tracks user inputs for investment amounts
 
-  // Calculates the total value of all stocks in the portfolio
-  const totalValue = stocks.reduce((total, stock) => {
-    const amount = Number(stock.amount) || 0;
-    const lastPrice = Number(stock.lastPrice) || 0;
-    return total + amount * lastPrice;
+  useEffect(() => {
+    const fetchPortfolioStocks = async () => {
+      try {
+        const response = await axios.get("/api/user/portfolio", {
+          withCredentials: true,
+        });
+        console.log("Portfolio stocks fetched:", response.data);
+        setPortfolioStocks(response.data);
+      } catch (error) {
+        console.error("Could not fetch portfolio", error);
+      }
+    };
+
+    if (isPortfolioView) {
+      fetchPortfolioStocks();
+    }
+  }, [isPortfolioView]);
+
+  const displayedStocks = isPortfolioView ? portfolioStocks : stocks;
+
+  const totalValue = displayedStocks.reduce((total, stock) => {
+    const quantity = Number(stock.quantity) || 0; 
+    const acquisitionPrice = Number(stock.acquisition_price) || 0; 
+    return total + quantity * acquisitionPrice;
   }, 0);
 
   // Updates the investment amount for a specific stock
@@ -63,8 +83,7 @@ const StockList = ({ stocks, onAddToPortfolio, isPortfolioView }) => {
     <TableContainer component={Paper}>
       <Table>
         <TableBody>
-          {stocks.map((stock, index) => (
-            // Use a combination of the stock symbol and the index to ensure uniqueness
+          {displayedStocks.map((stock, index) => (
             <TableRow key={stock.symbol + index}>
               <TableCell>{stock.symbol}</TableCell>
               <TableCell>{stock.name}</TableCell>
@@ -74,9 +93,9 @@ const StockList = ({ stocks, onAddToPortfolio, isPortfolioView }) => {
                     <Button onClick={() => navigate(`/stock/${stock.symbol}`)}>
                       See Details
                     </Button>
-                    <span>{stock.amount.toFixed(0)} stock(s)</span>
+                    <span>{stock.quantity.toFixed(0)} stock(s)</span>
                     <span style={{ marginLeft: "10px" }}>
-                      ${stock.lastPrice.toFixed(2)}
+                      ${stock.acquisition_price.toFixed(2)}
                     </span>
                   </>
                 ) : (
