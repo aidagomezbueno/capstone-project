@@ -1,9 +1,9 @@
 from flask import Flask, jsonify, Response, request
 import requests
 from flask_bcrypt import check_password_hash, generate_password_hash
-from flask_bcrypt import Bcrypt
+# from flask_bcrypt import Bcrypt
 from flask_cors import CORS
-from flask_sqlalchemy import SQLAlchemy
+# from flask_sqlalchemy import SQLAlchemy
 from itsdangerous.url_safe import URLSafeTimedSerializer as Serializer
 from sqlalchemy.pool import NullPool
 import oracledb
@@ -51,7 +51,6 @@ def login():
     except Exception as e:
         app.logger.error(f"An error occurred: {e}")
         return jsonify({'message': 'An error occurred'}), 500
-    
 
 @app.route('/signup', methods=['POST'])
 def signup():
