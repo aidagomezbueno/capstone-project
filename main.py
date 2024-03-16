@@ -1,22 +1,24 @@
 from flask import Flask, jsonify, Response, request
 import requests
-from flask_cors import CORS, cross_origin
+from flask_cors import CORS
 from itsdangerous.url_safe import URLSafeTimedSerializer as Serializer
 from sqlalchemy.pool import NullPool
 import oracledb
-# import csv
-# from io import StringIO
+import csv
+from io import StringIO
 from datetime import date
 from models import db, Stock, Portfolio, PortfolioStock, User
 from flask import session
 import secrets
 
+import logging
+from logging.handlers import RotatingFileHandler
+
+
 app = Flask(__name__)
-# CORS(app)
-CORS(app, resources={r"*": {"origins": "https://aida_gomezbueno.storage.googleapis.com"}})
-# CORS(app, resources={r"*": {"origins": "*"}})
-# CORS(app, supports_credentials=True)
-# CORS(app, resources={r"*": {"origins": "http://localhost:3000"}})
+# CORS(app, resources={r"*": {"origins": "https://aida_gomezbueno.storage.googleapis.com"}})
+# CORS(app, supports_credentials=True, resources={r"*": {"origins": "https://aida_gomezbueno.storage.googleapis.com"}})
+CORS(app, supports_credentials=True, resources={r"*": {"origins": "http://localhost:3000"}})
 
 un = 'MYAIDA'
 pw = 'AaZZ0r_cle#1'
@@ -31,17 +33,20 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'poolclass': NullPool
 }
 app.config['SQLALCHEMY_ECHO'] = True 
+
 app.config['SECRET_KEY'] = secrets.token_hex(16)
+app.config['SESSION_COOKIE_SAMESITE'] = 'None'
+app.config['SESSION_COOKIE_SECURE'] = True
+
 db.init_app(app)
 
 with app.app_context():
     db.create_all()
-
+    
 ALPHA_VANTAGE_API_KEY = 'E8LCWIHQ1EEYAU63'
 STOCK_DATA_URL = 'https://www.alphavantage.co/query'
 
 @app.route('/login', methods=['POST'])
-@cross_origin()
 def login():
     try:
         data = request.json
@@ -52,7 +57,9 @@ def login():
         print(user)
 
         if user and user.check_password(password):
+            session.permanent = True
             session['user_id'] = user.user_id
+            app.logger.info("User ID", session['user_id'])
             return jsonify({'message': 'Login successful'}), 200
         else:
             return jsonify({'message': 'Invalid username or password'}), 401
@@ -99,7 +106,7 @@ def get_all_stocks():
         # row_count = 0
         
         # for row in csv_reader:
-        #     if row_count >= 1000:  # Stop after 1000 symbols
+        #     if row_count >= 500:  # Stop after 1000 symbols
         #         break
         #     symbol, name = row[0], row[1].strip()
             
@@ -230,31 +237,38 @@ def add_to_portfolio():
     else:
         return jsonify({'message': 'Failed to fetch the latest stock price'}), 500
 
-
 @app.route('/api/user/portfolio', methods=['GET'])
 def get_user_portfolio():
     user_id = session.get('user_id')
     if not user_id:
         return jsonify({'message': 'User not logged in'}), 401
     
-    portfolio_stocks = PortfolioStock.query.join(Stock, PortfolioStock.stock_id == Stock.stock_id).filter(PortfolioStock.portfolio_id == Portfolio.query.filter_by(user_id=user_id).first().portfolio_id).all()
+    user_portfolio = Portfolio.query.filter_by(user_id=user_id).first()
+    if not user_portfolio:
+        return jsonify({'message': 'Portfolio not found'}), 404
 
-    portfolio_data = [
-        {
-            'symbol': stock.stock.symbol,
-            'name': stock.stock.name,
-            'quantity': stock.quantity,
-            'acquisition_price': stock.acquisition_price
-        } for stock in portfolio_stocks
-    ]
+    portfolio_stocks = PortfolioStock.query.filter_by(portfolio_id=user_portfolio.portfolio_id).all()
+    
+    portfolio_data = []
+    for portfolio_stock in portfolio_stocks:
+        stock = Stock.query.filter_by(stock_id=portfolio_stock.stock_id).first()
+        if stock:
+            portfolio_data.append({
+                'symbol': stock.symbol,
+                'name': stock.name,
+                'quantity': portfolio_stock.quantity,
+                'acquisition_price': portfolio_stock.acquisition_price
+            })
 
     return jsonify(portfolio_data)
+
 
 @app.route('/api/portfolio/remove', methods=['POST'])
 def remove_from_portfolio():
     data = request.json
     symbol = data.get('symbol')
     user_id = session.get('user_id')
+    # app.logger.info("User ID", user_id)
 
     if not user_id:
         return jsonify({'message': 'User is not logged in.'}), 401
@@ -275,10 +289,14 @@ def remove_from_portfolio():
     if not portfolio_stock:
         return jsonify({'message': 'Stock not in portfolio'}), 404
 
-    if portfolio_stock.quantity > 1:
+    if portfolio_stock.quantity > 0:
         portfolio_stock.quantity -= 1
         message = 'Stock quantity decreased in portfolio'
     else:
+        db.session.delete(portfolio_stock)
+        message = 'Stock removed from portfolio'
+        
+    if portfolio_stock.quantity == 0:
         db.session.delete(portfolio_stock)
         message = 'Stock removed from portfolio'
 

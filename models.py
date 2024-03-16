@@ -1,6 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
-from flask_bcrypt import generate_password_hash, check_password_hash
+# from flask_bcrypt import generate_password_hash, check_password_hash
 from flask_bcrypt import Bcrypt
 from sqlalchemy import Sequence
 from sqlalchemy.schema import FetchedValue

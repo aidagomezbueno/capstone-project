@@ -5,7 +5,9 @@ import { AppBar, Toolbar, Typography, Button, Container } from "@mui/material";
 import StockList from "./components/StockList";
 import StockDetails from "./components/StockDetails";
 import Login from "./components/Login";
-import { AuthProvider, useAuth } from "./AuthContext";
+import { useAuth } from "./AuthContext";
+import { createTheme, ThemeProvider, CssBaseline } from "@mui/material";
+import "./App.css";
 
 // Main application component managing routes, stocks data, and portfolio functionality
 const App = () => {
@@ -17,15 +19,15 @@ const App = () => {
   useEffect(() => {
     const fetchStocks = async () => {
       try {
-        const response = await axios.get(
-          `https://aida-mcsbt-integration.lm.r.appspot.com/api/quote/${symbol}`
-        );
+        const response = await axios.get(`/api/all-stocks`);
+        // const response = await axios.get(
+        //   `https://aida-mcsbt-integration.lm.r.appspot.com/api/all-stocks`
+        // );
         setAllStocks(response.data);
       } catch (error) {
         console.error("Error fetching stocks:", error);
       }
     };
-
     fetchStocks();
   }, []);
 
@@ -37,10 +39,10 @@ const App = () => {
   // Handles adding or updating stocks in the portfolio
   const handleAddToPortfolio = async (symbol, newAmount) => {
     try {
-      // const response = await axios.get(`/api/quote/${symbol}`);
-      const response = await axios.get(
-        `https://aida-mcsbt-integration.lm.r.appspot.com/api/quote/${symbol}`
-      );
+      const response = await axios.get(`/api/quote/${symbol}`);
+      // const response = await axios.get(
+      //   `https://aida-mcsbt-integration.lm.r.appspot.com/api/quote/${symbol}`
+      // );
       const lastPrice = parseFloat(response.data["Global Quote"]["05. price"]);
       console.log(`Last Price for ${symbol}:`, lastPrice);
 
@@ -80,85 +82,107 @@ const App = () => {
     };
   });
 
-  console.log("Portfolio Stocks with prices: ", portfolioStocks);
-
   const handleLogout = () => {
     contextLogout();
   };
 
+  const theme = createTheme({
+    palette: {
+      primary: {
+        main: "#a19aa0",
+      },
+    },
+    components: {
+      MuiCssBaseline: {
+        styleOverrides: {
+          body: {
+            backgroundColor: "#ebe1e9",
+          },
+        },
+      },
+    },
+  });
+
   return (
     <>
-      <AppBar position="static" style={{ backgroundColor: "#1976d2" }}>
-        <Toolbar style={{ justifyContent: "space-between" }}>
-          <Typography variant="h4" style={{ color: "white" }}>
-            WealthWise
-          </Typography>
-          <div>
-            {isAuthenticated ? (
-              <>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <AppBar position="static" style={{ backgroundColor: "#a19aa0" }}>
+          <Toolbar style={{ justifyContent: "space-between" }}>
+            <Typography variant="h4" style={{ color: "white" }}>
+              WealthWise
+            </Typography>
+            <div>
+              {isAuthenticated ? (
+                <>
+                  <Button
+                    color="inherit"
+                    component={Link}
+                    to="/home"
+                    style={{ color: "white" }}
+                  >
+                    Home
+                  </Button>
+                  <Button
+                    color="inherit"
+                    component={Link}
+                    to="/portfolio"
+                    style={{ color: "white" }}
+                  >
+                    My Portfolio
+                  </Button>
+                  <Button
+                    color="inherit"
+                    onClick={handleLogout}
+                    style={{ color: "white" }}
+                  >
+                    Log Out
+                  </Button>
+                </>
+              ) : (
                 <Button
                   color="inherit"
                   component={Link}
-                  to="/home"
+                  to="/"
                   style={{ color: "white" }}
                 >
-                  Home
+                  Login
                 </Button>
-                <Button
-                  color="inherit"
-                  component={Link}
-                  to="/portfolio"
-                  style={{ color: "white" }}
-                >
-                  My Portfolio
-                </Button>
-                <Button
-                  color="inherit"
-                  onClick={handleLogout}
-                  style={{ color: "white" }}
-                >
-                  Log Out
-                </Button>
-              </>
-            ) : (
-              <Button
-                color="inherit"
-                component={Link}
-                to="/"
-                style={{ color: "white" }}
-              >
-                Login
-              </Button>
-            )}
-          </div>
-        </Toolbar>
-      </AppBar>
-      <Container maxWidth="md" style={{ marginTop: "20px" }}>
-        <Routes>
-          <Route path="/" element={<Login />} />
-          <Route
-            path="/home"
-            element={
-              <StockList
-                stocks={allStocks}
-                onAddToPortfolio={handleAddToPortfolio}
-                isPortfolioView={false}
-              />
-            }
-          />
-          <Route
-            path="/portfolio"
-            element={
-              <StockList
-                stocks={portfolioStocks}
-                onAddToPortfolio={handleAddToPortfolio}
-                isPortfolioView={true}
-              />
-            }
-          />
-          <Route path="/stock/:symbol" element={<StockDetails />} />
-        </Routes>
-      </Container>
+              )}
+            </div>
+          </Toolbar>
+        </AppBar>
+        <Container
+          className="myApp"
+          maxWidth="md"
+          style={{ marginTop: "20px" }}
+        >
+          <Routes>
+            <Route path="/" element={<Login />} />
+            <Route
+              path="/home"
+              element={
+                <StockList
+                  stocks={allStocks}
+                  onAddToPortfolio={handleAddToPortfolio}
+                  isPortfolioView={false}
+                />
+              }
+            />
+            <Route
+              path="/portfolio"
+              element={
+                <StockList
+                  stocks={portfolioStocks}
+                  onAddToPortfolio={handleAddToPortfolio}
+                  isPortfolioView={true}
+                />
+              }
+            />
+            <Route path="/stock/:symbol" element={<StockDetails />} />
+          </Routes>
+        </Container>
+      </ThemeProvider>
     </>
   );
 };

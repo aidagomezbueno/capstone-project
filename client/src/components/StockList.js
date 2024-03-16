@@ -9,13 +9,11 @@ import {
   Button,
   TextField,
 } from "@mui/material";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 // Displays a list of stocks, allowing users to view stock details or add them to their portfolio
-const StockList = ({ stocks, isPortfolioView }) => {
-  const { symbol } = useParams();
-
+const StockList = ({ stocks, onAddToPortfolio, isPortfolioView }) => {
   const navigate = useNavigate();
   const [portfolioStocks, setPortfolioStocks] = useState([]);
   const [investments, setInvestments] = useState({}); // Tracks user inputs for investment amounts
@@ -23,15 +21,12 @@ const StockList = ({ stocks, isPortfolioView }) => {
   useEffect(() => {
     const fetchPortfolioStocks = async () => {
       try {
-        const response = await axios.get(
-          `https://aida-mcsbt-integration.lm.r.appspot.com/api/stock/${symbol}`,
-          {
-            withCredentials: true,
-          }
-        );
-        // const response = await axios.get("/api/user/portfolio", {
-        //   withCredentials: true,
-        // });
+        const response = await axios.get("/api/user/portfolio", {
+          withCredentials: true,
+        });
+        // const response = await axios.get(
+        //   "https://aida-mcsbt-integration.lm.r.appspot.com/api/user/portfolio"
+        // );
         console.log("Portfolio stocks fetched:", response.data);
         setPortfolioStocks(response.data);
       } catch (error) {
@@ -63,16 +58,17 @@ const StockList = ({ stocks, isPortfolioView }) => {
     if (investmentAmount > 0) {
       try {
         // Call the backend endpoint to add the stock to the portfolio
-        const response = await axios.post(
-          `https://aida-mcsbt-integration.lm.r.appspot.com/api/portfolio/add`,
-          {
-            symbol: symbol,
-            quantity: investmentAmount,
-          },
-          {
-            withCredentials: true,
-          }
-        );
+        const response = await axios.post("/api/portfolio/add", {
+          symbol: symbol,
+          quantity: investmentAmount,
+        });
+        // const response = await axios.post(
+        //   "https://aida-mcsbt-integration.lm.r.appspot.com/api/portfolio/add",
+        //   {
+        //     symbol: symbol,
+        //     quantity: investmentAmount,
+        //   }
+        // );
         if (response.status === 200) {
           console.log("Stock added to portfolio", response.data);
           setInvestments((prevInvestments) => ({
@@ -92,12 +88,17 @@ const StockList = ({ stocks, isPortfolioView }) => {
   const handleRemoveFromPortfolioClick = async (symbol) => {
     try {
       const response = await axios.post(
-        `https://aida-mcsbt-integration.lm.r.appspot.com/api/portfolio/remove`,
+        "/api/portfolio/remove",
         { symbol },
         { withCredentials: true }
       );
+      // const response = await axios.post(
+      //   "https://aida-mcsbt-integration.lm.r.appspot.com/api/portfolio/remove",
+      //   { symbol }
+      //   // { withCredentials: true }
+      // );
       if (response.status === 200) {
-        console.log("Stock removed from portfolio", response.data);
+        // console.log("Stock removed from portfolio", response.data);
         if (response.data.updated_quantity === 0) {
           setPortfolioStocks((prevPortfolioStocks) =>
             prevPortfolioStocks.filter((stock) => stock.symbol !== symbol)
@@ -113,7 +114,7 @@ const StockList = ({ stocks, isPortfolioView }) => {
         }
       }
     } catch (error) {
-      alert("There're no more stocks to remove");
+      alert("There're no more stocks to remove.");
     }
   };
 
@@ -147,7 +148,8 @@ const StockList = ({ stocks, isPortfolioView }) => {
                   <>
                     <TextField
                       size="small"
-                      label="Input number of stocks you want to buy"
+                      // fullWidth
+                      label="Input quantity of stocks you want to purchase"
                       type="number"
                       inputProps={{ step: "1" }}
                       value={investments[stock.symbol] || ""}
@@ -155,9 +157,11 @@ const StockList = ({ stocks, isPortfolioView }) => {
                         handleInvestmentChange(stock.symbol, event)
                       }
                       variant="standard"
+                      style={{ flex: 1 }}
                     />
                     <Button
                       onClick={() => handleAddToPortfolioClick(stock.symbol)}
+                      style={{ marginLeft: "1em", height: "50px" }}
                     >
                       Add to Portfolio
                     </Button>

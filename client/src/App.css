@@ -36,3 +36,28 @@
     transform: rotate(360deg);
   }
 }
+
+@media (min-width: 900px) {
+  .MuiContainer-root {
+    max-width: 70% !important;
+  }
+}
+
+.update-chart-button {
+  padding: 6px 20px;
+  border: 1px solid #a19aa0ac;
+  background-color: #a19aa052;
+  color: dimgrey;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  outline: none;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  align-self: last baseline;
+}
+
+.update-chart-button:hover,
+.update-chart-button:focus {
+  background-color: #ebe1e9;
+  color: grey;
+}

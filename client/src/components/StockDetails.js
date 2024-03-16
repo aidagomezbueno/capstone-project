@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
+
 import axios from "axios";
 import {
   LineChart,
@@ -25,10 +26,13 @@ const StockDetails = () => {
   useEffect(() => {
     const fetchDetails = async () => {
       try {
-        // const response = await axios.get(`/api/stock/${symbol}`);
-        const response = await axios.get(
-          `https://aida-mcsbt-integration.lm.r.appspot.com/api/stock/${symbol}`
-        );
+        const response = await axios.get(`/api/stock/${symbol}`);
+        // const response = await axios.get(
+        //   `https://aida-mcsbt-integration.lm.r.appspot.com/api/stock/${symbol}`
+        //   // {
+        //   //   withCredentials: true,
+        //   // }
+        // );
         const weeklyTimeSeries = response.data["Weekly Time Series"];
         const chartData = Object.entries(weeklyTimeSeries).map(
           ([date, data]) => ({
@@ -54,10 +58,13 @@ const StockDetails = () => {
   useEffect(() => {
     const fetchLatestQuote = async () => {
       try {
-        // const response = await axios.get(`/api/quote/${symbol}`);
-        const response = await axios.get(
-          `https://aida-mcsbt-integration.lm.r.appspot.com/api/quote/${symbol}`
-        );
+        const response = await axios.get(`/api/quote/${symbol}`);
+        // const response = await axios.get(
+        //   `https://aida-mcsbt-integration.lm.r.appspot.com/api/quote/${symbol}`
+        //   // {
+        //   //   withCredentials: true,
+        //   // }
+        // );
         setLatestQuote(response.data["Global Quote"]);
       } catch (error) {
         console.error("Error fetching latest quote:", error);
@@ -97,7 +104,7 @@ const StockDetails = () => {
 
   return (
     <div>
-      <h2>Stock Details for {symbol}</h2>
+      <h1>Stock Details for {symbol}</h1>
       {/* Input fields for date filtering and a button to update the chart based on the selected date range */}
       <div
         style={{
@@ -107,30 +114,43 @@ const StockDetails = () => {
         }}
       >
         <div style={{ width: "65%", paddingRight: "10px" }}>
-          <div style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
-            <label>
+          <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+            <label style={{ display: "flex", flexDirection: "column" }}>
               Start Date:
               <input
                 type="date"
                 value={startDate}
                 onChange={handleStartDateChange}
+                style={{
+                  padding: "10px",
+                  border: "1px solid #ddd",
+                  borderRadius: "4px",
+                  fontSize: "12px",
+                }}
               />
             </label>
-            <label>
+            <label style={{ display: "flex", flexDirection: "column" }}>
               End Date:
               <input
                 type="date"
                 value={endDate}
                 onChange={handleEndDateChange}
                 min={startDate}
+                style={{
+                  padding: "10px",
+                  border: "1px solid #ddd",
+                  borderRadius: "4px",
+                  fontSize: "12px",
+                }}
               />
             </label>
-            <button onClick={updateChart} style={{ height: "fit-content" }}>
-              Update Chart
+            <button onClick={updateChart} className="update-chart-button">
+              Update
             </button>
           </div>
+
           {/* Responsive container for rendering line chart of stock's historical data */}
-          <ResponsiveContainer width="100%" height={400}>
+          <ResponsiveContainer width="100%" height={450}>
             <LineChart
               data={details}
               margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
@@ -163,20 +183,57 @@ const StockDetails = () => {
                 borderRadius: "5px",
               }}
             >
-              <h3>Latest Quote</h3>
+              <h2>Latest Quote</h2>
+              <hr />
               {/* Latest quote details */}
               <div>
-                <p>Price: {latestQuote["05. price"]}</p>
-                <p>Open: {latestQuote["02. open"]}</p>
-                <p>High: {latestQuote["03. high"]}</p>
-                <p>Low: {latestQuote["04. low"]}</p>
-                <p>Volume: {latestQuote["06. volume"].toLocaleString()}</p>
                 <p>
-                  Latest Trading Day: {latestQuote["07. latest trading day"]}
+                  <strong>Price:</strong>{" "}
+                  {parseFloat(latestQuote["05. price"]).toFixed(2)}
                 </p>
-                <p>Previous Close: {latestQuote["08. previous close"]}</p>
-                <p>Change: {latestQuote["09. change"]}</p>
-                <p>Change Percent: {latestQuote["10. change percent"]}</p>
+                <p>
+                  <strong>Open: </strong>
+                  {parseFloat(latestQuote["02. open"]).toFixed(2)}
+                </p>
+                <p>
+                  <strong>High: </strong>
+                  {parseFloat(latestQuote["03. high"]).toFixed(2)}
+                </p>
+                <p>
+                  <strong>Low: </strong>
+                  {parseFloat(latestQuote["04. low"]).toFixed(2)}
+                </p>
+                <p>
+                  <strong>Volume:</strong>{" "}
+                  {parseFloat(latestQuote["06. volume"]).toLocaleString()}
+                </p>
+                <p>
+                  <strong>Latest Trading Day:</strong>{" "}
+                  {latestQuote["07. latest trading day"]}
+                </p>
+                <p>
+                  <strong>Previous Close:</strong>{" "}
+                  {parseFloat(latestQuote["08. previous close"]).toFixed(2)}
+                </p>
+                <p>
+                  <strong>Change:</strong> {latestQuote["09. change"]}
+                </p>
+                <p>
+                  <strong>Change Percent:</strong>
+                  <span
+                    style={{
+                      color: latestQuote["10. change percent"].includes("-")
+                        ? "red"
+                        : "green",
+                    }}
+                  >
+                    {" " +
+                      Number(
+                        latestQuote["10. change percent"].replace("%", "")
+                      ).toFixed(2)}
+                    %
+                  </span>
+                </p>
               </div>
             </div>
           </div>
