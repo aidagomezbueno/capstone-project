@@ -31,17 +31,17 @@ const Login = () => {
     event.preventDefault();
     setLoading(true);
     try {
-      // const response = await axios.post(
-      //   "https://aida-mcsbt-integration.lm.r.appspot.com/login",
-      //   {
-      //     username,
-      //     password,
-      //   }
-      // );
-      await axios.post("/login", {
-        username,
-        password,
-      });
+      const response = await axios.post(
+        "https://aida-mcsbt-integration.lm.r.appspot.com/login",
+        {
+          username,
+          password,
+        }
+      );
+      // await axios.post("/login", {
+      //   username,
+      //   password,
+      // });
       setLoading(false);
       handleAlert("Login successful, accessing app...", "success");
       login();
@@ -59,17 +59,17 @@ const Login = () => {
 
   const handleSignUp = async () => {
     try {
-      const response = await axios.post("/signup", {
-        name: username,
-        password,
-      });
-      // const response = await axios.post(
-      //   "https://aida-mcsbt-integration.lm.r.appspot.com/signup",
-      //   {
-      //     name: username,
-      //     password,
-      //   }
-      // );
+      // const response = await axios.post("/signup", {
+      //   name: username,
+      //   password,
+      // });
+      const response = await axios.post(
+        "https://aida-mcsbt-integration.lm.r.appspot.com/signup",
+        {
+          name: username,
+          password,
+        }
+      );
       if (response.status === 201) {
         setUsername("");
         setPassword("");

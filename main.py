@@ -17,8 +17,8 @@ from logging.handlers import RotatingFileHandler
 
 app = Flask(__name__)
 # CORS(app, resources={r"*": {"origins": "https://aida_gomezbueno.storage.googleapis.com"}})
-# CORS(app, supports_credentials=True, resources={r"*": {"origins": "https://aida_gomezbueno.storage.googleapis.com"}})
-CORS(app, supports_credentials=True, resources={r"*": {"origins": "http://localhost:3000"}})
+CORS(app, supports_credentials=True, resources={r"*": {"origins": "https://aida_gomezbueno.storage.googleapis.com"}})
+# CORS(app, supports_credentials=True, resources={r"*": {"origins": "http://localhost:3000"}})
 
 un = 'MYAIDA'
 pw = 'AaZZ0r_cle#1'
