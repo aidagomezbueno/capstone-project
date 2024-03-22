@@ -17,8 +17,8 @@ from logging.handlers import RotatingFileHandler
 
 app = Flask(__name__)
 # CORS(app, resources={r"*": {"origins": "https://aida_gomezbueno.storage.googleapis.com"}})
-CORS(app, supports_credentials=True, resources={r"*": {"origins": "https://aida_gomezbueno.storage.googleapis.com"}})
-# CORS(app, supports_credentials=True, resources={r"*": {"origins": "http://localhost:3000"}})
+# CORS(app, supports_credentials=True, resources={r"*": {"origins": "https://aida_gomezbueno.storage.googleapis.com"}})
+CORS(app, supports_credentials=True, resources={r"*": {"origins": "http://localhost:3000"}})
 
 un = 'MYAIDA'
 pw = 'AaZZ0r_cle#1'
@@ -59,7 +59,6 @@ def login():
         if user and user.check_password(password):
             session.permanent = True
             session['user_id'] = user.user_id
-            app.logger.info("User ID", session['user_id'])
             return jsonify({'message': 'Login successful'}), 200
         else:
             return jsonify({'message': 'Invalid username or password'}), 401
@@ -268,7 +267,6 @@ def remove_from_portfolio():
     data = request.json
     symbol = data.get('symbol')
     user_id = session.get('user_id')
-    # app.logger.info("User ID", user_id)
 
     if not user_id:
         return jsonify({'message': 'User is not logged in.'}), 401

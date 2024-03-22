@@ -26,13 +26,13 @@ const StockDetails = () => {
   useEffect(() => {
     const fetchDetails = async () => {
       try {
-        // const response = await axios.get(`/api/stock/${symbol}`);
-        const response = await axios.get(
-          `https://aida-mcsbt-integration.lm.r.appspot.com/api/stock/${symbol}`
-          // {
-          //   withCredentials: true,
-          // }
-        );
+        const response = await axios.get(`/api/stock/${symbol}`);
+        // const response = await axios.get(
+        //   `https://aida-mcsbt-integration.lm.r.appspot.com/api/stock/${symbol}`
+        // {
+        //   withCredentials: true,
+        // }
+        // );
         const weeklyTimeSeries = response.data["Weekly Time Series"];
         const chartData = Object.entries(weeklyTimeSeries).map(
           ([date, data]) => ({
@@ -58,13 +58,13 @@ const StockDetails = () => {
   useEffect(() => {
     const fetchLatestQuote = async () => {
       try {
-        // const response = await axios.get(`/api/quote/${symbol}`);
-        const response = await axios.get(
-          `https://aida-mcsbt-integration.lm.r.appspot.com/api/quote/${symbol}`
-          // {
-          //   withCredentials: true,
-          // }
-        );
+        const response = await axios.get(`/api/quote/${symbol}`);
+        // const response = await axios.get(
+        //   `https://aida-mcsbt-integration.lm.r.appspot.com/api/quote/${symbol}`
+        // {
+        //   withCredentials: true,
+        // }
+        // );
         setLatestQuote(response.data["Global Quote"]);
       } catch (error) {
         console.error("Error fetching latest quote:", error);

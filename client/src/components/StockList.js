@@ -21,12 +21,12 @@ const StockList = ({ stocks, onAddToPortfolio, isPortfolioView }) => {
   useEffect(() => {
     const fetchPortfolioStocks = async () => {
       try {
-        // const response = await axios.get("/api/user/portfolio", {
-        //   withCredentials: true,
-        // });
-        const response = await axios.get(
-          "https://aida-mcsbt-integration.lm.r.appspot.com/api/user/portfolio"
-        );
+        const response = await axios.get("/api/user/portfolio", {
+          withCredentials: true,
+        });
+        // const response = await axios.get(
+        //   "https://aida-mcsbt-integration.lm.r.appspot.com/api/user/portfolio"
+        // );
         console.log("Portfolio stocks fetched:", response.data);
         setPortfolioStocks(response.data);
       } catch (error) {
@@ -58,17 +58,17 @@ const StockList = ({ stocks, onAddToPortfolio, isPortfolioView }) => {
     if (investmentAmount > 0) {
       try {
         // Call the backend endpoint to add the stock to the portfolio
-        // const response = await axios.post("/api/portfolio/add", {
-        //   symbol: symbol,
-        //   quantity: investmentAmount,
-        // });
-        const response = await axios.post(
-          "https://aida-mcsbt-integration.lm.r.appspot.com/api/portfolio/add",
-          {
-            symbol: symbol,
-            quantity: investmentAmount,
-          }
-        );
+        const response = await axios.post("/api/portfolio/add", {
+          symbol: symbol,
+          quantity: investmentAmount,
+        });
+        // const response = await axios.post(
+        //   "https://aida-mcsbt-integration.lm.r.appspot.com/api/portfolio/add",
+        //   {
+        //     symbol: symbol,
+        //     quantity: investmentAmount,
+        //   }
+        // );
         if (response.status === 200) {
           console.log("Stock added to portfolio", response.data);
           setInvestments((prevInvestments) => ({
@@ -87,16 +87,16 @@ const StockList = ({ stocks, onAddToPortfolio, isPortfolioView }) => {
 
   const handleRemoveFromPortfolioClick = async (symbol) => {
     try {
-      // const response = await axios.post(
-      //   "/api/portfolio/remove",
-      //   { symbol },
-      //   { withCredentials: true }
-      // );
       const response = await axios.post(
-        "https://aida-mcsbt-integration.lm.r.appspot.com/api/portfolio/remove",
-        { symbol }
-        // { withCredentials: true }
+        "/api/portfolio/remove",
+        { symbol },
+        { withCredentials: true }
       );
+      // const response = await axios.post(
+      //   "https://aida-mcsbt-integration.lm.r.appspot.com/api/portfolio/remove",
+      //   { symbol }
+      //   // { withCredentials: true }
+      // );
       if (response.status === 200) {
         // console.log("Stock removed from portfolio", response.data);
         if (response.data.updated_quantity === 0) {
